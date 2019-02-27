@@ -15,7 +15,7 @@
 
 #include <string.h>
 
-#include "esp_common.h"
+#include "defines.h"
 #include "log.h"
 
 #include "freertos/FreeRTOS.h"

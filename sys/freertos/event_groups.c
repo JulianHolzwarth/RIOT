@@ -15,34 +15,33 @@
 
 #include <string.h>
 
-#include "rom/ets_sys.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
 
 EventGroupHandle_t xEventGroupCreate (void)
 {
-    ets_printf("%s\n", __func__);
+    DEBUG("%s\n", __func__);
     return NULL;
 }
 
 void vEventGroupDelete (EventGroupHandle_t xEventGroup)
 {
-    ets_printf("%s\n", __func__);
+    DEBUG("%s\n", __func__);
     return NULL;
 }
 
 EventBits_t xEventGroupSetBits (EventGroupHandle_t xEventGroup,
                                 const EventBits_t uxBitsToSet)
 {
-    ets_printf("%s\n", __func__);
+    DEBUG("%s\n", __func__);
     return NULL;
 }
 
 EventBits_t xEventGroupClearBits (EventGroupHandle_t xEventGroup,
                                   const EventBits_t uxBitsToClear )
 {
-    ets_printf("%s\n", __func__);
+    DEBUG("%s\n", __func__);
     return NULL;
 }
 
@@ -52,7 +51,7 @@ EventBits_t xEventGroupWaitBits (const EventGroupHandle_t xEventGroup,
                                  const BaseType_t xWaitForAllBits,
                                  TickType_t xTicksToWait)
 {
-    ets_printf("%s\n", __func__);
+    DEBUG("%s\n", __func__);
     return NULL;
 }
 
