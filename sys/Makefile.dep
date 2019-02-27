@@ -5,3 +5,8 @@ endif
 ifneq (,$(filter prng_fortuna,$(USEMODULE)))
   CFLAGS += -DCRYPTO_AES
 endif
+
+ifneq (,$(filter freertos,$(USEMODULE)))
+    # add additional modules required by freertos
+    USEMODULE += xtimer
+endif

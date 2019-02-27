@@ -136,7 +136,9 @@ endif
 ifneq (,$(filter bluetil_%,$(USEMODULE)))
   DIRS += net/ble/bluetil
 endif
-
+ifneq (,$(filter freertos,$(USEMODULE)))
+  DIRS += freertos
+endif
 DIRS += $(dir $(wildcard $(addsuffix /Makefile, $(USEMODULE))))
 
 include $(RIOTBASE)/Makefile.base
