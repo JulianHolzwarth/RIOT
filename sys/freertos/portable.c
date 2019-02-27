@@ -15,10 +15,10 @@
 
 #include <string.h>
 
-#include "defines.h"
+#include "include/defines.h"
 #include "log.h"
 
-#include "freertos/FreeRTOS.h"
+#include "include/FreeRTOS.h"
 
 uint32_t xPortGetTickRateHz(void) {
     return MSEC_PER_SEC / portTICK_PERIOD_MS;

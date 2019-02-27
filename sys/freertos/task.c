@@ -15,7 +15,6 @@
 
 #include <string.h>
 
-#include "esp_common.h"
 #include "esp_attr.h"
 #include "log.h"
 #include "syscalls.h"
@@ -24,8 +23,9 @@
 
 #include "soc/soc.h"
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+#include "include/FreeRTOS.h"
+#include "include/task.h"
+#include "include/defines.h"
 
 #define MHZ 1000000
 

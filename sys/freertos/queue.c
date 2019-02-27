@@ -15,7 +15,7 @@
 
 #include <string.h>
 
-#include "esp_common.h"
+//#include "esp_common.h"
 #include "esp_attr.h"
 #include "log.h"
 #include "mutex.h"
@@ -24,10 +24,11 @@
 
 #include "rom/ets_sys.h"
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/queue.h"
-#include "freertos/semphr.h"
-#include "freertos/task.h"
+#include "include/FreeRTOS.h"
+#include "include/queue.h"
+#include "include/semphr.h"
+#include "include/task.h"
+#include "include/defines.h"
 
 #undef  portENTER_CRITICAL
 #undef  portEXIT_CRITICAL

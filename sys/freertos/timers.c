@@ -15,13 +15,13 @@
 
 #include <string.h>
 
-#include "esp_common.h"
 #include "esp_attr.h"
 #include "log.h"
 #include "xtimer.h"
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/timers.h"
+#include "include/FreeRTOS.h"
+#include "include/timers.h"
+#include "include/defines.h"
 
 typedef struct {
     xtimer_t    xtimer;         /* xtimer object */

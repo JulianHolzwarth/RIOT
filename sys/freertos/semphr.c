@@ -15,13 +15,12 @@
 
 #include <string.h>
 
-#include "esp_common.h"
-#include "irq_arch.h"
 #include "log.h"
 #include "mutex.h"
 #include "rmutex.h"
 
-#include "freertos/FreeRTOS.h"
+#include "include/FreeRTOS.h"
+#include "include/defines.h"
 
 /*
  * In FreeRTOS different types of semaphores, mutexes and queues are all
