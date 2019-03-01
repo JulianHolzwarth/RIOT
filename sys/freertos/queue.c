@@ -15,8 +15,6 @@
 
 #include <string.h>
 
-//#include "esp_common.h"
-#include "esp_attr.h"
 #include "log.h"
 #include "mutex.h"
 #include "rmutex.h"

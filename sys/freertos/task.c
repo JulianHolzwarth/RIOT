@@ -15,7 +15,6 @@
 
 #include <string.h>
 
-#include "esp_attr.h"
 #include "log.h"
 #include "syscalls.h"
 #include "thread.h"
