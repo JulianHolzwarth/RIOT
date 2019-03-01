@@ -23,9 +23,9 @@
 
 #include "soc/soc.h"
 
-#include "include/FreeRTOS.h"
-#include "include/task.h"
-#include "include/defines.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/defines.h"
 
 #define MHZ 1000000
 

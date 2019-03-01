@@ -19,9 +19,9 @@
 #include "log.h"
 #include "xtimer.h"
 
-#include "include/FreeRTOS.h"
-#include "include/timers.h"
-#include "include/defines.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/timers.h"
+#include "freertos/defines.h"
 
 typedef struct {
     xtimer_t    xtimer;         /* xtimer object */
@@ -32,7 +32,7 @@ typedef struct {
     TimerCallbackFunction_t cb; /* FreeRTOS callback function */
 } freertos_xtimer_t;
 
-static void IRAM_ATTR _xtimer_callback (void *arg)
+static void _xtimer_callback (void *arg)
 {
     CHECK_PARAM(arg != NULL);
 

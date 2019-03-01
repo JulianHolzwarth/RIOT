@@ -19,8 +19,8 @@
 #include "mutex.h"
 #include "rmutex.h"
 
-#include "include/FreeRTOS.h"
-#include "include/defines.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/defines.h"
 
 /*
  * In FreeRTOS different types of semaphores, mutexes and queues are all

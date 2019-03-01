@@ -24,11 +24,11 @@
 
 #include "rom/ets_sys.h"
 
-#include "include/FreeRTOS.h"
-#include "include/queue.h"
-#include "include/semphr.h"
-#include "include/task.h"
-#include "include/defines.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
+#include "freertos/semphr.h"
+#include "freertos/task.h"
+#include "freertos/defines.h"
 
 #undef  portENTER_CRITICAL
 #undef  portEXIT_CRITICAL
@@ -113,7 +113,7 @@ void vQueueDelete( QueueHandle_t xQueue )
     free(xQueue);
 }
 
-BaseType_t IRAM_ATTR _queue_generic_send(QueueHandle_t xQueue,
+BaseType_t _queue_generic_send(QueueHandle_t xQueue,
                                          const void * const pvItemToQueue,
                                          const BaseType_t xCopyPosition,
                                          TickType_t xTicksToWait,
@@ -210,7 +210,7 @@ BaseType_t IRAM_ATTR _queue_generic_send(QueueHandle_t xQueue,
     return errQUEUE_FULL;
 }
 
-BaseType_t IRAM_ATTR _queue_generic_recv (QueueHandle_t xQueue,
+BaseType_t _queue_generic_recv (QueueHandle_t xQueue,
                                           void * const pvBuffer,
                                           TickType_t xTicksToWait,
                                           const BaseType_t xJustPeeking,
@@ -295,7 +295,7 @@ BaseType_t IRAM_ATTR _queue_generic_recv (QueueHandle_t xQueue,
     }
 }
 
-BaseType_t IRAM_ATTR xQueueGenericSend( QueueHandle_t xQueue,
+BaseType_t xQueueGenericSend( QueueHandle_t xQueue,
                                         const void * const pvItemToQueue,
                                         TickType_t xTicksToWait,
                                         const BaseType_t xCopyPosition )
@@ -308,7 +308,7 @@ BaseType_t IRAM_ATTR xQueueGenericSend( QueueHandle_t xQueue,
                                xTicksToWait, NULL);
 }
 
-BaseType_t IRAM_ATTR xQueueGenericSendFromISR( QueueHandle_t xQueue,
+BaseType_t xQueueGenericSendFromISR( QueueHandle_t xQueue,
                                                const void * const pvItemToQueue,
                                                BaseType_t * const pxHigherPriorityTaskWoken,
                                                const BaseType_t xCopyPosition )
@@ -321,7 +321,7 @@ BaseType_t IRAM_ATTR xQueueGenericSendFromISR( QueueHandle_t xQueue,
                                0, pxHigherPriorityTaskWoken);
 }
 
-BaseType_t IRAM_ATTR xQueueGenericReceive (QueueHandle_t xQueue,
+BaseType_t xQueueGenericReceive (QueueHandle_t xQueue,
                                            void * const pvBuffer,
                                            TickType_t xTicksToWait,
                                            const BaseType_t xJustPeeking)
@@ -334,7 +334,7 @@ BaseType_t IRAM_ATTR xQueueGenericReceive (QueueHandle_t xQueue,
                                xJustPeeking, NULL);
 }
 
-BaseType_t IRAM_ATTR xQueueReceiveFromISR (QueueHandle_t xQueue,
+BaseType_t xQueueReceiveFromISR (QueueHandle_t xQueue,
                                            void * const pvBuffer,
                                            BaseType_t * const pxHigherPriorityTaskWoken)
 {
