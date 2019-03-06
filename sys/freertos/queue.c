@@ -20,8 +20,6 @@
 #include "rmutex.h"
 #include "thread.h"
 
-#include "rom/ets_sys.h"
-
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "freertos/semphr.h"
@@ -356,7 +354,7 @@ UBaseType_t uxQueueMessagesWaiting( QueueHandle_t xQueue )
 BaseType_t xQueueGiveFromISR (QueueHandle_t xQueue,
                               BaseType_t * const pxHigherPriorityTaskWoken)
 {
-    ets_printf("%s\n", __func__);
+    DEBUG_PRINT("%s\n", __func__);
     return pdFALSE;
 }
 

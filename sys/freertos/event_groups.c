@@ -21,27 +21,27 @@
 
 EventGroupHandle_t xEventGroupCreate (void)
 {
-    DEBUG("%s\n", __func__);
+    DEBUG_PRINT("%s\n", __func__);
     return NULL;
 }
 
 void vEventGroupDelete (EventGroupHandle_t xEventGroup)
 {
-    DEBUG("%s\n", __func__);
+    DEBUG_PRINT("%s\n", __func__);
     return NULL;
 }
 
 EventBits_t xEventGroupSetBits (EventGroupHandle_t xEventGroup,
                                 const EventBits_t uxBitsToSet)
 {
-    DEBUG("%s\n", __func__);
+    DEBUG_PRINT("%s\n", __func__);
     return NULL;
 }
 
 EventBits_t xEventGroupClearBits (EventGroupHandle_t xEventGroup,
                                   const EventBits_t uxBitsToClear )
 {
-    DEBUG("%s\n", __func__);
+    DEBUG_PRINT("%s\n", __func__);
     return NULL;
 }
 
@@ -51,7 +51,7 @@ EventBits_t xEventGroupWaitBits (const EventGroupHandle_t xEventGroup,
                                  const BaseType_t xWaitForAllBits,
                                  TickType_t xTicksToWait)
 {
-    DEBUG("%s\n", __func__);
+    DEBUG_PRINT("%s\n", __func__);
     return NULL;
 }
 

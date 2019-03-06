@@ -12,6 +12,11 @@
 #define MSEC_PER_SEC  1000UL
 #endif
 
+#ifndef PRO_CPU_NUM
+#define PRO_CPU_NUM (0)
+#endif
+
+
 #if ENABLE_DEBUG
 /**
   * @brief  Parameter check with return a value.

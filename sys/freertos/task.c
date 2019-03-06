@@ -20,8 +20,6 @@
 #include "thread.h"
 #include "xtimer.h"
 
-#include "soc/soc.h"
-
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/defines.h"
