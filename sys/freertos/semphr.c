@@ -45,13 +45,13 @@ SemaphoreHandle_t xSemaphoreCreateMutex(void)
     _tmp->type = queueQUEUE_TYPE_MUTEX;
     mutex_init(&_tmp->mutex);
 
-    DEBUG("%s mutex=%p\n", __func__, _tmp);
+    DEBUG("%s mutex=%p\n", __func__, (void*)_tmp);
     return _tmp;
 }
 
 void vSemaphoreDelete( SemaphoreHandle_t xSemaphore )
 {
-    DEBUG("%s mutex=%p\n", __func__, xSemaphore);
+    DEBUG("%s mutex=%p\n", __func__, (void*)xSemaphore);
 
     CHECK_PARAM(xSemaphore != NULL);
     free(xSemaphore);
@@ -59,7 +59,7 @@ void vSemaphoreDelete( SemaphoreHandle_t xSemaphore )
 
 BaseType_t xSemaphoreGive (SemaphoreHandle_t xSemaphore)
 {
-    DEBUG("%s mutex=%p\n", __func__, xSemaphore);
+    DEBUG("%s mutex=%p\n", __func__, (void*)xSemaphore);
 
     CHECK_PARAM_RET(xSemaphore != NULL, pdFALSE);
 
@@ -82,7 +82,7 @@ BaseType_t xSemaphoreGive (SemaphoreHandle_t xSemaphore)
 BaseType_t xSemaphoreTake (SemaphoreHandle_t xSemaphore,
                            TickType_t xTicksToWait)
 {
-    DEBUG("%s mutex=%p wait=%u\n", __func__, xSemaphore, xTicksToWait);
+    DEBUG("%s mutex=%p wait=%u\n", __func__, (void*)xSemaphore, xTicksToWait);
 
     CHECK_PARAM_RET(xSemaphore != NULL, pdFALSE);
 
@@ -116,14 +116,14 @@ SemaphoreHandle_t xSemaphoreCreateRecursiveMutex(void)
     _tmp->type = queueQUEUE_TYPE_RECURSIVE_MUTEX;
     rmutex_init(&_tmp->rmutex);
 
-    DEBUG("%s rmutex=%p\n", __func__, _tmp);
+    DEBUG("%s rmutex=%p\n", __func__, (void*)_tmp);
 
     return _tmp;
 }
 
 BaseType_t xSemaphoreGiveRecursive (SemaphoreHandle_t xSemaphore)
 {
-    DEBUG("%s rmutex=%p\n", __func__, xSemaphore);
+    DEBUG("%s rmutex=%p\n", __func__, (void*)xSemaphore);
 
     CHECK_PARAM_RET(xSemaphore != NULL, pdFALSE);
     CHECK_PARAM_RET(((_rmutex_t*)xSemaphore)->type ==
@@ -136,7 +136,7 @@ BaseType_t xSemaphoreGiveRecursive (SemaphoreHandle_t xSemaphore)
 BaseType_t xSemaphoreTakeRecursive (SemaphoreHandle_t xSemaphore,
                                     TickType_t xTicksToWait)
 {
-    DEBUG("%s rmutex=%p wait=%u\n", __func__, xSemaphore, xTicksToWait);
+    DEBUG("%s rmutex=%p wait=%u\n", __func__, (void*)xSemaphore, xTicksToWait);
 
     CHECK_PARAM_RET(xSemaphore != NULL, pdFALSE);
     CHECK_PARAM_RET(((_rmutex_t*)xSemaphore)->type ==
@@ -159,7 +159,7 @@ BaseType_t xSemaphoreTakeRecursive (SemaphoreHandle_t xSemaphore,
 void vPortCPUAcquireMutex(portMUX_TYPE *mux)
 {
     DEBUG("%s pid=%d prio=%d mux=%p\n", __func__,
-          thread_getpid(), sched_threads[thread_getpid()]->priority, mux);
+          thread_getpid(), sched_threads[thread_getpid()]->priority, (void*)mux);
     critical_enter();
     mutex_lock(mux); /* lock the mutex with interrupts disabled */
     critical_exit();
@@ -168,7 +168,7 @@ void vPortCPUAcquireMutex(portMUX_TYPE *mux)
 void vPortCPUReleaseMutex(portMUX_TYPE *mux)
 {
     DEBUG("%s pid=%d prio=%d mux=%p\n", __func__,
-          thread_getpid(), sched_threads[thread_getpid()]->priority, mux);
+          thread_getpid(), sched_threads[thread_getpid()]->priority, (void*)mux);
     critical_enter();
     mutex_unlock(mux); /* unlock the mutex with interrupts disabled */
     critical_exit();

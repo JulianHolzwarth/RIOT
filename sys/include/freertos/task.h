@@ -49,7 +49,7 @@ TaskHandle_t xTaskGetCurrentTaskHandle (void);
 void vTaskEnterCritical (portMUX_TYPE *mux);
 void vTaskExitCritical (portMUX_TYPE *mux);
 
-TickType_t xTaskGetTickCount (void);
+//TickType_t xTaskGetTickCount (void);
 
 #ifdef __cplusplus
 }

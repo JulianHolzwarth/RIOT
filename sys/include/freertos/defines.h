@@ -72,10 +72,6 @@
  * @{
  */
 
-#ifndef critical_enter()
 #define critical_enter()   int _irq_state = irq_disable ()
-#endif
 
-#ifndef critical_exit()
 #define critical_exit()    irq_restore(_irq_state)
-#endif

@@ -16,7 +16,7 @@
 #include <string.h>
 
 #include "log.h"
-#include "syscalls.h"
+//#include "syscalls.h"
 #include "thread.h"
 #include "xtimer.h"
 
@@ -34,7 +34,9 @@ typedef struct {
     uint32_t critical_nesting;
 } thread_arch_ext_t;
 
-volatile thread_arch_ext_t threads_arch_exts[KERNEL_PID_LAST + 1] = {};
+volatile thread_arch_ext_t threads_arch_exts[KERNEL_PID_LAST + 1];
+// = {} 
+
 
 BaseType_t xTaskCreatePinnedToCore (TaskFunction_t pvTaskCode,
                                     const char * const pcName,
@@ -44,11 +46,14 @@ BaseType_t xTaskCreatePinnedToCore (TaskFunction_t pvTaskCode,
                                     TaskHandle_t * const pvCreatedTask,
                                     const BaseType_t xCoreID)
 {
+
+    /*unused variable*/
+    (void) xCoreID;
     /* FreeRTOS priority values have to be inverted */
     uxPriority = SCHED_PRIO_LEVELS - uxPriority - 1;
 
     DEBUG("%s name=%s size=%d prio=%d pvCreatedTask=%p ",
-          __func__, pcName, usStackDepth, uxPriority, pvCreatedTask);
+          __func__, pcName, usStackDepth, uxPriority, (void*)pvCreatedTask);
 
     char* stack = malloc(usStackDepth + sizeof(thread_t));
 
@@ -89,7 +94,7 @@ BaseType_t xTaskCreate (TaskFunction_t pvTaskCode,
 
 void vTaskDelete (TaskHandle_t xTaskToDelete)
 {
-    DEBUG("%s pid=%d task=%p\n", __func__, thread_getpid(), xTaskToDelete);
+    DEBUG("%s pid=%d task=%p\n", __func__, thread_getpid(), (void*) xTaskToDelete);
 
     CHECK_PARAM(xTaskToDelete != NULL);
 
@@ -120,10 +125,10 @@ void vTaskDelay( const TickType_t xTicksToDelay )
     xtimer_usleep(us);
 }
 
-TickType_t xTaskGetTickCount (void)
+/*TickType_t xTaskGetTickCount (void)
 {
     return system_get_time() / USEC_PER_MSEC / portTICK_PERIOD_MS;
-}
+}*/
 
 void vTaskEnterCritical( portMUX_TYPE *mux )
 {
@@ -131,7 +136,7 @@ void vTaskEnterCritical( portMUX_TYPE *mux )
     kernel_pid_t my_pid = thread_getpid();
 
     DEBUG("%s pid=%d prio=%d mux=%p\n", __func__,
-          my_pid, sched_threads[my_pid]->priority, mux);
+          my_pid, sched_threads[my_pid]->priority, (void*)mux);
 
     /* disable interrupts */
     uint32_t state = irq_disable();
@@ -152,7 +157,7 @@ void vTaskExitCritical( portMUX_TYPE *mux )
     kernel_pid_t my_pid = thread_getpid();
 
     DEBUG("%s pid=%d prio=%d mux=%p\n", __func__,
-          my_pid, sched_threads[my_pid]->priority, mux);
+          my_pid, sched_threads[my_pid]->priority, (void*)mux);
 
     /* release the mutex with interrupts disabled */
     mutex_unlock(mux); /* TODO should be only a spin lock */

@@ -69,9 +69,10 @@ void vPortCPUReleaseMutex (portMUX_TYPE *mux);
         xQueueReceiveFromISR( ( QueueHandle_t ) ( xSemaphore ), \
                               NULL, ( pxHigherPriorityTaskWoken ) )
 
-#define xSemaphoreGiveFromISR( xSemaphore, pxHigherPriorityTaskWoken ) \
+/*#define xSemaphoreGiveFromISR( xSemaphore, pxHigherPriorityTaskWoken ) \
         xQueueGiveFromISR( ( QueueHandle_t ) ( xSemaphore ), \
                            ( pxHigherPriorityTaskWoken ) )
+                           */
 
 #ifdef __cplusplus
 }

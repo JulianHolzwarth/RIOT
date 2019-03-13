@@ -73,6 +73,7 @@ TimerHandle_t xTimerCreate (const char * const pcTimerName,
 
 BaseType_t xTimerDelete(TimerHandle_t xTimer, TickType_t xBlockTime)
 {
+    (void) xBlockTime;
     CHECK_PARAM_RET(xTimer != NULL, pdFALSE);
 
     freertos_xtimer_t* timer = (freertos_xtimer_t*)xTimer;
@@ -84,6 +85,7 @@ BaseType_t xTimerDelete(TimerHandle_t xTimer, TickType_t xBlockTime)
 
 BaseType_t xTimerStart (TimerHandle_t xTimer, TickType_t xBlockTime)
 {
+    (void) xBlockTime;
     CHECK_PARAM_RET(xTimer != NULL, pdFALSE);
 
     freertos_xtimer_t* timer = (freertos_xtimer_t*)xTimer;
@@ -94,6 +96,7 @@ BaseType_t xTimerStart (TimerHandle_t xTimer, TickType_t xBlockTime)
 
 BaseType_t xTimerStop  (TimerHandle_t xTimer, TickType_t xBlockTime)
 {
+    (void) xBlockTime;
     CHECK_PARAM_RET(xTimer != NULL, pdFALSE);
 
     freertos_xtimer_t* timer = (freertos_xtimer_t*)xTimer;
