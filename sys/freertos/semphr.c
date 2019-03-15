@@ -10,7 +10,7 @@
 
 #ifndef DOXYGEN
 
-#define ENABLE_DEBUG (0)
+#define ENABLE_DEBUG (1)
 #include "debug.h"
 
 #include <string.h>
@@ -93,7 +93,7 @@ BaseType_t xSemaphoreTake (SemaphoreHandle_t xSemaphore,
         case queueQUEUE_TYPE_MUTEX:
         {
             if (xTicksToWait == 0) {
-                return (mutex_trylock(mutex) == 0) ? pdTRUE : pdFALSE;
+                return (mutex_trylock(mutex) == pdTRUE) ? pdTRUE : pdFALSE;
             }
             else {
                 mutex_lock(mutex);
@@ -107,6 +107,36 @@ BaseType_t xSemaphoreTake (SemaphoreHandle_t xSemaphore,
 
         default:
             return xQueueGenericReceive(xSemaphore, NULL, xTicksToWait, pdFALSE);
+    }
+}
+
+UBaseType_t uxSemaphoreGetCount( SemaphoreHandle_t xSemaphore )
+{
+    CHECK_PARAM_RET(xSemaphore != NULL, pdFALSE);
+    mutex_t* mutex;
+    rmutex_t*  rmutex;
+
+    uint8_t  type = ((_mutex_t*)xSemaphore)->type;
+    switch (type) {
+        case queueQUEUE_TYPE_MUTEX:
+            mutex= &((_mutex_t*)xSemaphore)->mutex;
+            if (mutex->queue.next == NULL) {
+                return 1;
+            }
+            else {
+                return 0;
+            }
+            break;
+        case queueQUEUE_TYPE_RECURSIVE_MUTEX:
+            rmutex = &((_rmutex_t*)xSemaphore)->rmutex;
+            if (rmutex->refcount == 0) {
+                return 1;
+            } 
+            else {
+                return 0;
+            }
+        default:
+            return uxQueueMessagesWaiting(xSemaphore);
     }
 }
 
@@ -146,7 +176,7 @@ BaseType_t xSemaphoreTakeRecursive (SemaphoreHandle_t xSemaphore,
     rmutex_t*  rmutex = &((_rmutex_t*)xSemaphore)->rmutex;
 
     if (xTicksToWait == 0) {
-        ret = (rmutex_trylock(rmutex) == 0) ? pdTRUE : pdFALSE;
+        ret = (rmutex_trylock(rmutex) == pdTRUE) ? pdTRUE : pdFALSE;
     }
     else {
         rmutex_lock(&((_rmutex_t*)xSemaphore)->rmutex);

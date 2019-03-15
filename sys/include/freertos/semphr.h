@@ -32,6 +32,7 @@ void vSemaphoreDelete (SemaphoreHandle_t xSemaphore);
 BaseType_t xSemaphoreGive (SemaphoreHandle_t xSemaphore);
 BaseType_t xSemaphoreTake (SemaphoreHandle_t xSemaphore,
                            TickType_t xTicksToWait);
+UBaseType_t uxSemaphoreGetCount(SemaphoreHandle_t xSemaphore);
 BaseType_t xSemaphoreGiveRecursive (SemaphoreHandle_t xSemaphore);
 BaseType_t xSemaphoreTakeRecursive (SemaphoreHandle_t xSemaphore,
                                     TickType_t xTicksToWait);
@@ -69,10 +70,11 @@ void vPortCPUReleaseMutex (portMUX_TYPE *mux);
         xQueueReceiveFromISR( ( QueueHandle_t ) ( xSemaphore ), \
                               NULL, ( pxHigherPriorityTaskWoken ) )
 
-/*#define xSemaphoreGiveFromISR( xSemaphore, pxHigherPriorityTaskWoken ) \
+#define xSemaphoreGiveFromISR( xSemaphore, pxHigherPriorityTaskWoken ) \
         xQueueGiveFromISR( ( QueueHandle_t ) ( xSemaphore ), \
                            ( pxHigherPriorityTaskWoken ) )
-                           */
+
+                           
 
 #ifdef __cplusplus
 }

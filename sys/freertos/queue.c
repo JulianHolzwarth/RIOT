@@ -10,7 +10,7 @@
 
 #ifndef DOXYGEN
 
-#define ENABLE_DEBUG (0)
+#define ENABLE_DEBUG (1)
 #include "debug.h"
 
 #include <string.h>
@@ -351,5 +351,10 @@ UBaseType_t uxQueueMessagesWaiting( QueueHandle_t xQueue )
     return queue->item_level;
 }
 
-
+BaseType_t xQueueGiveFromISR (QueueHandle_t xQueue,
+                              BaseType_t * const pxHigherPriorityTaskWoken)
+{
+    DEBUG_PRINT("%s\n", __func__);
+    return pdFALSE;
+}
 #endif /* DOXYGEN */

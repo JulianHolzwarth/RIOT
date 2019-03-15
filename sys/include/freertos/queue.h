@@ -52,8 +52,8 @@ BaseType_t xQueueGenericSendFromISR (QueueHandle_t xQueue,
                                      BaseType_t * const pxHigherPriorityTaskWoken,
                                      const BaseType_t xCopyPosition );
 
-/*BaseType_t xQueueGiveFromISR (QueueHandle_t xQueue,
-                              BaseType_t * const pxHigherPriorityTaskWoken);*/
+BaseType_t xQueueGiveFromISR (QueueHandle_t xQueue,
+                              BaseType_t * const pxHigherPriorityTaskWoken);
 
 UBaseType_t uxQueueMessagesWaiting( QueueHandle_t xQueue );
 
