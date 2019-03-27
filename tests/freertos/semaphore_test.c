@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "xtimer.h"
 
 #include "freertos/semphr.h"
 #include "freertos/queue.h"
@@ -122,6 +123,8 @@ int semaphore_test_mutex(void)
         return pdFAIL;
     }
     xtimer_usleep(20);
+
+    return pdPASS;
 
 }
 
