@@ -1,19 +1,34 @@
 #!/usr/bin/env python3
 
+#  Copyright (C) 2019 Freie Universitaet Berlin,
+#
 # This file is subject to the terms and conditions of the GNU Lesser
 # General Public License v2.1. See the file LICENSE in the top level
 # directory for more details.
 
+# @author      Julian Holzwarth <julian.holzwarth@fu-berlin.de>
+
 import sys
+import pexpect
 from testrunner import run
 
 
 def testfunc(child):
-    child.expect_exact("starting test")
-    child.expect_exact("semaphore is created and available")
-    child.expect_exact("First semaphore block, as expected true")
-    child.expect_exact("Second semaphore block, as expected false", TI)
-    child.expect_exact("Semaphore unblock, as expected true")
+    # Try to wait for the shell
+    for _ in range(0, 10):
+        child.sendline("help")
+        if child.expect_exact(["> ", pexpect.TIMEOUT], timeout=1) == 0:
+            break
+    child.sendline("mutex_semaphore")
+    child.expect("starting test: mutex semaphore")
+    child.expect("OK")
+    child.expect_exact("> ")
+
+    child.sendline("recursive_mutex_semaphore")
+    child.expect_exact("starting test: recursive mutex semaphore")
+    child.expect("OK")
+    child.expect_exact("> ")
+
 
 if __name__ == "__main__":
     sys.exit(run(testfunc))

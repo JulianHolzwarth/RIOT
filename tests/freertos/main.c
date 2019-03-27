@@ -1,75 +1,103 @@
+/*
+ * Copyright (C) 2019 Freie Universitaet Berlin,
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
+ */
+
+/**
+ * @ingroup     tests
+ * @{
+ *
+ * @file
+ * @brief       freertos testing tool
+ *
+ * More detailed information about the file and the functionality implemented.
+ *
+ * @author      Julian Holzwarth <julian.holzwarth@fu-berlin.de>
+ *
+ */
 
 #include <stdio.h>
-#include "mutex.h"
-#include "freertos/semphr.h"
-#include "freertos/queue.h"
+#include <stdlib.h>
+
+#include "shell.h"
+
 #include "freertos/FreeRTOS.h"
+#include "semaphore_test.h"
 
-void print_semaphore_count(SemaphoreHandle_t xSemaphore)
+/**
+ * Foward declarations
+ */
+static int cmd_test_mutex(int argc, char **argv);
+static int cmd_test_recursive_mutex(int argc, char **argv);
+
+
+/**
+ * @brief   List of command for this application.
+ */
+static const shell_command_t shell_commands[] = {
+    { "mutex_semaphore", "tests freertos mutex semaphor", cmd_test_mutex, },
+    { "recursive_mutex_semaphore", "tests freertos recursive mutex semaphor", cmd_test_recursive_mutex },
+    { NULL, NULL, NULL }
+};
+
+/**
+ * @brief   shell command to test freertos mutex semaphore
+ *
+ * @param[in] argc  Number of arguments
+ * @param[in] argv  Array of arguments
+ *
+ * @return 0 on success
+ */
+static int cmd_test_mutex(int argc, char **argv)
 {
-    UBaseType_t temp_count = uxSemaphoreGetCount(xSemaphore);
-        printf("Semaphor Count: %i\n",temp_count);
+    (void)argc;
+    (void)argv;
+    puts("starting test: mutex semaphore");
+    if (semaphore_test_mutex_take() == pdPASS) {
+        puts("OK");
+    }
+    else {
+        puts("mutex semaphore test failed");
+    }
+
+    return 0;
 }
 
-void test_semaphore(SemaphoreHandle_t testing_semaphore)
+/**
+ * @brief   shell command to test freertos recursive mutex semaphore
+ *
+ * @param[in] argc  Number of arguments
+ * @param[in] argv  Array of arguments
+ *
+ * @return 0 on success
+ */
+static int cmd_test_recursive_mutex(int argc, char **argv)
 {
-    if (testing_semaphore == NULL) {
-        puts("Error in semaphor creation");
-        return;
-    }
-    puts("semaphore is created");
-    print_semaphore_count(testing_semaphore);
-    if (xSemaphoreGive(testing_semaphore) == pdTRUE) {
-        puts("Semaphore unblock true");
+    (void)argc;
+    (void)argv;
+    puts("starting test: recursive mutex semaphore");
+    if (semaphore_test_recursive_mutex_take() == pdPASS) {
+        puts("OK");
     }
     else {
-        puts("Semaphore unblock false");
+        puts("recursive mutex semaphore test failed");
     }
-    print_semaphore_count(testing_semaphore);
-    if (xSemaphoreTake(testing_semaphore, 0) == pdTRUE) {
-        puts("First semaphore block true");
-    }
-    else {
-        puts("First semaphore block false");
-    }
-    print_semaphore_count(testing_semaphore);
-    
-    if (xSemaphoreTake(testing_semaphore, 0) == pdTRUE) {
-        puts("Second semaphore block true");
-    }
-    else {
-        puts("Second semaphore block false");
-    }
-
-    print_semaphore_count(testing_semaphore);
-
-    if (xSemaphoreGive(testing_semaphore) == pdTRUE) {
-        puts("Semaphore unblock true");
-    }
-    else {
-        puts("Semaphore unblock false");
-    }
-
-    print_semaphore_count(testing_semaphore);
-
-    if (xSemaphoreGive(testing_semaphore) == pdTRUE) {
-        puts("Semaphore unblock true");
-    }
-    else {
-        puts("Semaphore unblock false");
-    }
-    print_semaphore_count(testing_semaphore);
-    vSemaphoreDelete(testing_semaphore);
-    puts("Semaphore deleted");
+    return 0;
 }
 
-
+/**
+ * @brief   main function starting shell
+ *
+ * @return 0 on success
+ */
 int main(void)
 {
-    
-    // testing semaphore
-    puts("starting test");
-    SemaphoreHandle_t testing_semaphore = xSemaphoreCreateCounting(3,2);
-    test_semaphore(testing_semaphore);
+    puts("Starting shell...");
+    char line_buf[SHELL_DEFAULT_BUFSIZE];
+    shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
+
     return 0;
 }
