@@ -49,6 +49,82 @@ int semaphore_test_mutex_take(void)
     return pdPASS;
 }
 
+int semaphore_test_mutex_take_not_owned(SemaphoreHandle_t testing_semaphore)
+{
+    if (xSemaphoreTake(testing_semaphore, 0) == pdPASS) {
+        puts("error in Take: taking not owned Semaphore");
+        vSemaphoreDelete(testing_semaphore);
+        return pdFAIL;
+    }
+
+    if (xSemaphoreGive(testing_semaphore) == pdPASS) {
+        puts("error in Give: gave not owned semaphore");
+        vSemaphoreDelete(testing_semaphore);
+        return pdFAIL;
+    }
+
+    if (xSemaphoreTake(testing_semaphore, 0) == pdFAIL) {
+        puts("error in Take: should not be free after the thread not owning the semaphore calls xSemaphoreGive");
+        vSemaphoreDelete(testing_semaphore);
+        return pdFAIL;
+    }
+    return pdPASS;
+}
+
+int semaphore_test_mutex_thread(SemaphoreHandle_t testing_semaphore)
+{
+
+    if (xSemaphoreTake(testing_semaphore, 0) == pdFAIL) {
+        puts("error in Take");
+        vSemaphoreDelete(testing_semaphore);
+        return pdFAIL;
+    }
+    /* TODO change time */
+    xtimer_usleep(20);
+    if (xSemaphoreGive(testing_semaphore) == pdFAIL) {
+        puts("error in Give");
+        vSemaphoreDelete(testing_semaphore);
+        return pdFAIL;
+    }
+    xtimer_usleep(20);
+    if (semaphore_test_mutex_take_not_owned(testing_semaphore) == pdFAIL) {
+        return pdFAIL;
+    }
+    return pdPASS;
+}
+
+/**
+ * @brief   test for the freertos mutex semaphore
+ *
+ * @return pdPASS when the test is passed, pdFail otherwise
+ */
+int semaphore_test_mutex(void)
+{
+    /*
+     *
+     * TODO:
+     * - mulithreading
+     * - create
+     * - delete
+     * - give
+     * - take
+     * 
+     */
+    SemaphoreHandle_t testing_semaphore = xSemaphoreCreateMutex();
+    if (testing_semaphore == NULL) {
+        puts("test failed: mutex semaphore not created");
+        return pdFAIL;
+    }
+    /* TODO start thread semaphore_test_mutex_thread */
+    /* TODO change time */
+    xtimer_usleep(10);
+    if (semaphore_test_mutex_take_not_owned(testing_semaphore) == pdFAIL) {
+        return pdFAIL;
+    }
+    xtimer_usleep(20);
+
+}
+
 /**
  * @brief   tests the take function for a freertos recursive mutex semaphore
  *
