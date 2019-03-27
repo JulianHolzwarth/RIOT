@@ -354,6 +354,8 @@ UBaseType_t uxQueueMessagesWaiting( QueueHandle_t xQueue )
 BaseType_t xQueueGiveFromISR (QueueHandle_t xQueue,
                               BaseType_t * const pxHigherPriorityTaskWoken)
 {
+    (void) xQueue;
+    (void) pxHigherPriorityTaskWoken;
     DEBUG_PRINT("%s\n", __func__);
     return pdFALSE;
 }
