@@ -142,6 +142,7 @@ int semaphore_test_binary(void)
  */
 int semaphore_test_recursive_mutex_take(void)
 {
+    /* TODO */
     SemaphoreHandle_t testing_semaphore = xSemaphoreCreateRecursiveMutex();
 
     if (testing_semaphore == NULL) {
@@ -163,5 +164,15 @@ int semaphore_test_recursive_mutex_take(void)
             return pdFAIL;
         }
     }
+    return pdPASS;
+}
+/**
+ * @brief   tests the freertos counting semaphore
+ *
+ * @return pdPASS when the test is passed, pdFail otherwise
+ */
+int semaphore_test_counting(void)
+{
+    /* TODO */
     return pdPASS;
 }

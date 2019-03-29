@@ -47,6 +47,13 @@ int semaphore_test_recursive_mutex_take(void);
  */
 int semaphore_test_binary(void);
 
+/**
+ * @brief   tests the freertos counting semaphore
+ *
+ * @return pdPASS when the test is passed, pdFail otherwise
+ */
+int semaphore_test_counting(void);
+
 #ifdef __cplusplus
 }
 #endif

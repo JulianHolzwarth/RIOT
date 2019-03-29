@@ -24,13 +24,18 @@ def testfunc(child):
     child.expect("OK")
     child.expect_exact("> ")
 
-    child.sendline("recursive_mutex_semaphore")
+    child.sendline("r_mutex_semaphore")
     child.expect_exact("starting test: recursive mutex semaphore")
     child.expect("OK")
     child.expect_exact("> ")
 
     child.sendline("binary_semaphore")
     child.expect_exact("starting test: binary semaphore")
+    child.expect("OK")
+    child.expect_exact("> ")
+
+    child.sendline("counting_semaphore")
+    child.expect_exact("starting test: counting semaphore")
     child.expect("OK")
     child.expect_exact("> ")
 
