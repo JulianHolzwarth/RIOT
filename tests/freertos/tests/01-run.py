@@ -29,6 +29,11 @@ def testfunc(child):
     child.expect("OK")
     child.expect_exact("> ")
 
+    child.sendline("binary_semaphore")
+    child.expect_exact("starting test: binary semaphore")
+    child.expect("OK")
+    child.expect_exact("> ")
+
 
 if __name__ == "__main__":
     sys.exit(run(testfunc))

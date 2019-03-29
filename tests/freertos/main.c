@@ -32,6 +32,7 @@
  */
 static int cmd_test_mutex(int argc, char **argv);
 static int cmd_test_recursive_mutex(int argc, char **argv);
+static int cmd_test_binary(int argc, char **argv);
 
 
 /**
@@ -40,6 +41,7 @@ static int cmd_test_recursive_mutex(int argc, char **argv);
 static const shell_command_t shell_commands[] = {
     { "mutex_semaphore", "tests freertos mutex semaphor", cmd_test_mutex, },
     { "recursive_mutex_semaphore", "tests freertos recursive mutex semaphor", cmd_test_recursive_mutex },
+    { "binary_semaphore", "tests freertos binary semaphor",  cmd_test_binary},
     { NULL, NULL, NULL }
 };
 
@@ -56,7 +58,7 @@ static int cmd_test_mutex(int argc, char **argv)
     (void)argc;
     (void)argv;
     puts("starting test: mutex semaphore");
-    if (semaphore_test_mutex_take() == pdPASS) {
+    if (semaphore_test_mutex() == pdPASS) {
         puts("OK");
     }
     else {
@@ -85,6 +87,29 @@ static int cmd_test_recursive_mutex(int argc, char **argv)
     else {
         puts("recursive mutex semaphore test failed");
     }
+    return 0;
+}
+
+/**
+ * @brief   shell command to test freertos binary semaphore
+ *
+ * @param[in] argc  Number of arguments
+ * @param[in] argv  Array of arguments
+ *
+ * @return 0 on success
+ */
+static int cmd_test_binary(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    puts("starting test: binary semaphore");
+    if (semaphore_test_binary() == pdPASS) {
+        puts("OK");
+    }
+    else {
+        puts("binary semaphore test failed");
+    }
+
     return 0;
 }
 
