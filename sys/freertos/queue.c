@@ -10,7 +10,7 @@
 
 #ifndef DOXYGEN
 
-#define ENABLE_DEBUG (1)
+#define ENABLE_DEBUG (0)
 #include "debug.h"
 
 #include <string.h>
@@ -73,7 +73,7 @@ QueueHandle_t xQueueGenericCreate( const UBaseType_t uxQueueLength,
     queue->item_tail = 0;
     queue->item_level = 0;
 
-    DEBUG_PRINT("queue=%p\n", (void*)queue);
+    DEBUG("queue=%p\n", (void*)queue);
 
     return queue;
 }
