@@ -20,6 +20,10 @@
 
 #include "semaphore_test.h"
 
+#ifndef SEMAPHORE_TEST_FOR_COUNTER
+#define SEMAPHORE_TEST_FOR_COUNTER 1000
+#endif
+
 /* to test the semaphore */
 static mutex_t test_mutex;
 /* to test the recursive mutex semaphore */
@@ -46,7 +50,7 @@ static void * semaphore_test_thread(void *parameter)
     int ret = pdPASS;
 
     uint8_t loop_var;
-    for(size_t i = 0; i < 1000; i++)
+    for(size_t i = 0; i < SEMAPHORE_TEST_FOR_COUNTER; i++)
     {
         loop_var = pdTRUE;
         while(loop_var) {
@@ -104,7 +108,7 @@ static int semaphore_test_helpfunction(SemaphoreHandle_t testing_semaphore) {
 
     /* semaphore test */
     uint8_t loop_var;
-    for(size_t i = 0; i < 1000; i++)
+    for(size_t i = 0; i < SEMAPHORE_TEST_FOR_COUNTER; i++)
     {
         loop_var = pdTRUE;
         while(loop_var) {
@@ -217,7 +221,7 @@ static void * semaphore_test_recursive_mutex_thread(void *parameter)
     int ret = pdPASS;
 
     uint8_t loop_var;
-    for(size_t i = 0; i < 1000; i++)
+    for(size_t i = 0; i < SEMAPHORE_TEST_FOR_COUNTER; i++)
     {
         loop_var = pdTRUE;
         while(loop_var) {
@@ -291,9 +295,8 @@ int semaphore_test_recursive_mutex(void)
         puts("Error in thread creation: pid not valid");
         return pdFAIL;
     }
-    puts("created thread, starting test");
     uint8_t loop_var;
-    for(size_t i = 0; i < 1000; i++)
+    for(size_t i = 0; i < SEMAPHORE_TEST_FOR_COUNTER; i++)
     {
         loop_var = pdTRUE;
         while(loop_var) {
