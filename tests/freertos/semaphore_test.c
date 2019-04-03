@@ -9,9 +9,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <inttypes.h>
-#include "pthread.h"
-#include "xtimer.h"
+#include "log.h"
 #include "mutex.h"
+#include "rmutex.h"
+#include "thread.h"
 
 #include "freertos/semphr.h"
 #include "freertos/queue.h"
@@ -19,7 +20,13 @@
 
 #include "semaphore_test.h"
 
+/* to test the semaphore */
 static mutex_t test_mutex;
+/* if locked thread is done */
+static mutex_t thread_done_mutex;
+/* if locked at least one thread failed the test */
+static mutex_t thread_return_value_mutex;
+
 
 /* give does not work as in freertos: give allways works in riot (gives not owned semaphores) */
 
@@ -29,7 +36,7 @@ static mutex_t test_mutex;
  * @return pdPASS when the test is passed, pdFail otherwise
  */
 
-static void * semaphore_test_mutex_thread(void *parameter)
+static void * semaphore_test_thread(void *parameter)
 {
     SemaphoreHandle_t testing_semaphore = (SemaphoreHandle_t) parameter;
     int ret = pdPASS;
@@ -42,8 +49,9 @@ static void * semaphore_test_mutex_thread(void *parameter)
             if (xSemaphoreTake(testing_semaphore, 0) == pdPASS) {
                 loop_var = pdFALSE;
             }
+            thread_yield();
         }
-        xtimer_usleep(10);
+        thread_yield();
         if (mutex_trylock(&test_mutex) == pdFALSE){
             vSemaphoreDelete(testing_semaphore);
             ret = pdFAIL;
@@ -52,8 +60,12 @@ static void * semaphore_test_mutex_thread(void *parameter)
         }
         mutex_unlock(&test_mutex);
         xSemaphoreGive(testing_semaphore);
+        thread_yield();
     }
-    pthread_exit((void*)ret);
+    if (ret == pdFAIL) {
+        mutex_trylock(&thread_return_value_mutex);
+    }
+    mutex_trylock(&thread_done_mutex);
     return NULL;
 }
 
@@ -70,12 +82,27 @@ static int semaphore_test_helpfunction(SemaphoreHandle_t testing_semaphore) {
     }
 
     mutex_init(&test_mutex);
+    mutex_init(&thread_done_mutex);
+    mutex_init(&thread_return_value_mutex);
     mutex_unlock(&test_mutex);
-    pthread_t sem_thread;
-    pthread_attr_t sem_attr;
-    pthread_attr_init(&sem_attr);
-    pthread_create(&sem_thread, &sem_attr, semaphore_test_mutex_thread, (void *) testing_semaphore);
-    
+    mutex_unlock(&thread_done_mutex);
+    mutex_unlock(&thread_return_value_mutex);
+
+    /* threading */
+    void *thread_stack = malloc(THREAD_STACKSIZE_MAIN);
+    kernel_pid_t thread_id;
+
+    thread_id = thread_create(thread_stack, THREAD_STACKSIZE_MAIN,
+                              THREAD_PRIORITY_MAIN, THREAD_CREATE_WOUT_YIELD, 
+                              semaphore_test_thread, (void *) testing_semaphore, "semaphore_helpfunction");
+    if (!pid_is_valid(thread_id)) {
+        free(thread_stack);
+        vSemaphoreDelete(testing_semaphore);
+        puts("Error in thread creation: pid not valid");
+        return pdFAIL;
+    }
+
+    /* semaphore test */
     uint8_t loop_var;
     for(size_t i = 0; i < 1000; i++)
     {
@@ -84,8 +111,9 @@ static int semaphore_test_helpfunction(SemaphoreHandle_t testing_semaphore) {
             if (xSemaphoreTake(testing_semaphore, 0) == pdPASS) {
                 loop_var = pdFALSE;
             }
+            thread_yield();
         }
-        xtimer_usleep(10);
+        thread_yield();
         if (mutex_trylock(&test_mutex) == pdFALSE){
             vSemaphoreDelete(testing_semaphore);
             test_result = pdFAIL;
@@ -94,19 +122,24 @@ static int semaphore_test_helpfunction(SemaphoreHandle_t testing_semaphore) {
         }
         mutex_unlock(&test_mutex);
         xSemaphoreGive(testing_semaphore);
+        thread_yield();
     }
 
-    int ret;
-    if (pthread_join(sem_thread, (void **) &ret) != 0) {
-        puts("pthread error");
-        vSemaphoreDelete(testing_semaphore);
-        return pdFAIL;
-    }
+   /* waiting for created thread to finish */
+   bool thread_done_val = pdFALSE;
+   while(!thread_done_val){
+       thread_yield();
+       if ((&thread_done_mutex)->queue.next != NULL) {
+           thread_done_val = pdTRUE;
+       }
+   }
 
-    if(ret == pdFAIL || test_result == pdFAIL){
-        vSemaphoreDelete(testing_semaphore);
-        return pdFAIL;
-    }
+   /* evaluating test results and freeing memory */
+   free(thread_stack);
+   if (test_result == pdFAIL || mutex_trylock(&thread_return_value_mutex) == pdFALSE ) {
+       vSemaphoreDelete(testing_semaphore);
+       return pdFAIL;
+   }
     vSemaphoreDelete(testing_semaphore);
     return pdPASS;
 
@@ -166,6 +199,17 @@ int semaphore_test_recursive_mutex_take(void)
     }
     return pdPASS;
 }
+
+/**
+ * @brief   tests the freertos recursive mutex semaphore
+ *
+ * @return pdPASS when the test is passed, pdFAIL otherwise
+ */
+int semaphore_test_recursive_mutex(void)
+{
+    return pdFAIL;
+}
+
 /**
  * @brief   tests the freertos counting semaphore
  *
@@ -174,5 +218,5 @@ int semaphore_test_recursive_mutex_take(void)
 int semaphore_test_counting(void)
 {
     /* TODO */
-    return pdPASS;
+    return pdFAIL;
 }

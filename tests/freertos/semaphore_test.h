@@ -41,6 +41,12 @@ int semaphore_test_mutex(void);
 int semaphore_test_recursive_mutex_take(void);
 
 /**
+ * @brief   tests the freertos recursive mutex semaphore
+ *
+ * @return pdPASS when the test is passed, pdFAIL otherwise
+ */
+int semaphore_test_recursive_mutex(void);
+/**
  * @brief   tests the freertos binary semaphore
  *
  * @return pdPASS when the test is passed, pdFail otherwise

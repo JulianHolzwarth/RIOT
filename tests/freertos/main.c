@@ -129,6 +129,7 @@ static int cmd_test_counting(int argc, char **argv)
     (void)argc;
     (void)argv;
     puts("starting test: counting semaphore");
+    puts("counting semaphore not implemented");
     if (semaphore_test_counting() == pdPASS) {
         puts("OK");
     }
