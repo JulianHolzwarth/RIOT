@@ -21,15 +21,20 @@
 #include "semaphore_test.h"
 
 #ifndef SEMAPHORE_TEST_FOR_COUNTER
-#define SEMAPHORE_TEST_FOR_COUNTER 1000
+#define SEMAPHORE_TEST_FOR_COUNTER 100
 #endif
 
 /* to test the semaphore */
 static mutex_t test_mutex;
+static int8_t counting_test;
 /* to test the recursive mutex semaphore */
 static rmutex_t recursive_test_mutex;
-/* if locked thread is done */
+/* if thread has finished */
 static mutex_t thread_done_mutex;
+static mutex_t thread_done_mutex2;
+static mutex_t thread_done_mutex3;
+static mutex_t thread_done_mutex4;
+static mutex_t thread_done_mutex5;
 /* if locked at least one thread failed the test */
 static mutex_t thread_return_value_mutex;
 
@@ -65,6 +70,7 @@ static void * semaphore_test_thread(void *parameter)
             puts("test failed: xSemaphoreTake() succeded for a semaphore without free places");
             break;
         }
+        thread_yield();
         mutex_unlock(&test_mutex);
         xSemaphoreGive(testing_semaphore);
         thread_yield();
@@ -84,7 +90,7 @@ static void * semaphore_test_thread(void *parameter)
 static int semaphore_test_helpfunction(SemaphoreHandle_t testing_semaphore) {
     uint8_t test_result = pdPASS;
     if (testing_semaphore == NULL) {
-        puts("test failed: mutex semaphore not created");
+        puts("test failed: semaphore not created");
         return pdFAIL;
     }
 
@@ -119,11 +125,11 @@ static int semaphore_test_helpfunction(SemaphoreHandle_t testing_semaphore) {
         }
         thread_yield();
         if (mutex_trylock(&test_mutex) == pdFALSE){
-            vSemaphoreDelete(testing_semaphore);
             test_result = pdFAIL;
             puts("test failed: xSemaphoreTake() succeded for a semaphore without free places");
             break;
         }
+        thread_yield();
         mutex_unlock(&test_mutex);
         xSemaphoreGive(testing_semaphore);
         thread_yield();
@@ -275,10 +281,9 @@ int semaphore_test_recursive_mutex(void)
     SemaphoreHandle_t testing_semaphore =  xSemaphoreCreateRecursiveMutex();
     uint8_t test_result = pdPASS;
     if (testing_semaphore == NULL) {
-        puts("test failed: mutex semaphore not created");
+        puts("test failed: recursive mutex semaphore not created");
         return pdFAIL;
     }
-    puts("mutex init");
     rmutex_init(&recursive_test_mutex);
     mutex_init(&thread_done_mutex);
     mutex_init(&thread_return_value_mutex);
@@ -354,12 +359,199 @@ int semaphore_test_recursive_mutex(void)
 }
 
 /**
+ * @brief   threadfunction for the freertos counting mutex semaphore test
+ *
+ * @param[in] parameter  the SemaphoreHandle of the semaphore to be tested
+ * 
+ * @return NULL
+ */
+
+static void * semaphore_test_counting_thread(void *parameter)
+{
+    SemaphoreHandle_t testing_semaphore = (SemaphoreHandle_t) parameter;
+    int ret = pdPASS;
+    uint8_t loop_var;
+    for(size_t i = 0; i < SEMAPHORE_TEST_FOR_COUNTER; i++)
+    {
+        loop_var = pdTRUE;
+        while(loop_var) {
+            if (xSemaphoreTake(testing_semaphore, 0) == pdPASS) {
+                loop_var = pdFALSE;
+            }
+            thread_yield();
+        }
+        thread_yield();
+        mutex_lock(&test_mutex);
+        if (counting_test <= 0 ){
+            ret = pdFAIL;
+            puts("test failed: xSemaphoreTake() succeded for a semaphore without free places");
+            mutex_unlock(&test_mutex);
+            break;
+        }
+        thread_yield();
+        counting_test--;
+        thread_yield();
+        mutex_unlock(&test_mutex);
+        thread_yield();
+
+        mutex_lock(&test_mutex);
+        if (counting_test >= 5 ){
+            ret = pdFAIL;
+            puts("test failed: too many places");
+            mutex_unlock(&test_mutex);
+            break;
+        }
+        thread_yield();
+        counting_test++;
+        thread_yield();
+        mutex_unlock(&test_mutex);
+        xSemaphoreGive(testing_semaphore);
+        thread_yield();
+    }
+
+    if (ret == pdFAIL) {
+        mutex_trylock(&thread_return_value_mutex);
+    }
+    if (!mutex_trylock(&thread_done_mutex)) {
+         if (!mutex_trylock(&thread_done_mutex2)) {
+              if (!mutex_trylock(&thread_done_mutex3)) {
+                if (!mutex_trylock(&thread_done_mutex4)) {
+                    if (!mutex_trylock(&thread_done_mutex5)) {
+                        puts("error in thread done");
+                        mutex_trylock(&thread_return_value_mutex);
+                }
+                }
+            }
+        }
+    }
+    return NULL;
+}
+
+/**
  * @brief   tests the freertos counting semaphore
  *
  * @return pdPASS when the test is passed, pdFail otherwise
  */
 int semaphore_test_counting(void)
 {
-    /* TODO */
-    return pdFAIL;
+    SemaphoreHandle_t testing_semaphore = xSemaphoreCreateCounting(5, 2);
+    uint8_t test_result = pdPASS;
+    counting_test = 5;
+    if (testing_semaphore == NULL) {
+        puts("test failed: counting semaphore not created");
+        return pdFAIL;
+    }
+
+    mutex_init(&test_mutex);
+    mutex_init(&thread_done_mutex);
+    mutex_init(&thread_done_mutex2);
+    mutex_init(&thread_done_mutex3);
+    mutex_init(&thread_done_mutex4);
+    mutex_init(&thread_done_mutex5);
+    mutex_init(&thread_return_value_mutex);
+
+    void *thread1_stack = malloc(THREAD_STACKSIZE_MAIN);
+    void *thread2_stack = malloc(THREAD_STACKSIZE_MAIN);
+    void *thread3_stack = malloc(THREAD_STACKSIZE_MAIN);
+    void *thread4_stack = malloc(THREAD_STACKSIZE_MAIN);
+    void *thread5_stack = malloc(THREAD_STACKSIZE_MAIN);
+
+    kernel_pid_t thread_id_1;
+    kernel_pid_t thread_id_2;
+    kernel_pid_t thread_id_3;
+    kernel_pid_t thread_id_4;
+    kernel_pid_t thread_id_5;
+
+    thread_id_1 = thread_create(thread1_stack, THREAD_STACKSIZE_MAIN,
+                                THREAD_PRIORITY_MAIN, THREAD_CREATE_WOUT_YIELD, 
+                                &semaphore_test_counting_thread, (void *) testing_semaphore, "c_semaphore_helpfunction_1");
+    thread_id_2 = thread_create(thread2_stack, THREAD_STACKSIZE_MAIN,
+                                THREAD_PRIORITY_MAIN, THREAD_CREATE_WOUT_YIELD, 
+                                &semaphore_test_counting_thread, (void *) testing_semaphore, "c_semaphore_helpfunction_2");
+    thread_id_3 = thread_create(thread3_stack, THREAD_STACKSIZE_MAIN,
+                                THREAD_PRIORITY_MAIN, THREAD_CREATE_WOUT_YIELD, 
+                                &semaphore_test_counting_thread, (void *) testing_semaphore, "c_semaphore_helpfunction_3");
+    thread_id_4 = thread_create(thread4_stack, THREAD_STACKSIZE_MAIN,
+                                THREAD_PRIORITY_MAIN, THREAD_CREATE_WOUT_YIELD, 
+                                &semaphore_test_counting_thread, (void *) testing_semaphore, "c_semaphore_helpfunction_4");
+    thread_id_5 = thread_create(thread5_stack, THREAD_STACKSIZE_MAIN,
+                                THREAD_PRIORITY_MAIN, THREAD_CREATE_WOUT_YIELD, 
+                                &semaphore_test_counting_thread, (void *) testing_semaphore, "c_semaphore_helpfunction_5");
+
+    if ((!pid_is_valid(thread_id_1)) && (!pid_is_valid(thread_id_2)) && (!pid_is_valid(thread_id_3)) && 
+        (!pid_is_valid(thread_id_4)) && (!pid_is_valid(thread_id_5))) {
+        free(thread1_stack);
+        free(thread2_stack);
+        free(thread3_stack);
+        free(thread4_stack);
+        free(thread5_stack);
+        vSemaphoreDelete(testing_semaphore);
+        puts("Error in thread creation: pid not valid");
+        return pdFAIL;
+    }
+
+    /* semaphore test */
+    uint8_t loop_var;
+    for(size_t i = 0; i < SEMAPHORE_TEST_FOR_COUNTER; i++)
+    {
+        loop_var = pdTRUE;
+        while(loop_var) {
+            if (xSemaphoreTake(testing_semaphore, 0) == pdPASS) {
+                loop_var = pdFALSE;
+            }
+            thread_yield();
+        }
+        thread_yield();
+        mutex_lock(&test_mutex);
+        if (counting_test <= 0 ){
+            test_result = pdFAIL;
+            puts("test failed: xSemaphoreTake() succeded for a semaphore without free places");
+            mutex_unlock(&test_mutex);
+            break;
+        }
+        thread_yield();
+        counting_test--;
+        thread_yield();
+        mutex_unlock(&test_mutex);
+        thread_yield();
+
+        mutex_lock(&test_mutex);
+        if (counting_test >= 5 ){
+            test_result = pdFAIL;
+            puts("test failed: too many places");
+            mutex_unlock(&test_mutex);
+            break;
+        }
+        thread_yield();
+        counting_test++;
+        thread_yield();
+        mutex_unlock(&test_mutex);
+
+        xSemaphoreGive(testing_semaphore);
+        thread_yield();
+    }
+
+    /* waiting for created thread to finish */
+    bool thread_done_val = pdFALSE;
+    while(!thread_done_val){
+        thread_yield();
+        if (((&thread_done_mutex)->queue.next != NULL) && ((&thread_done_mutex2)->queue.next != NULL) &&
+            ((&thread_done_mutex3)->queue.next != NULL) && ((&thread_done_mutex4)->queue.next != NULL) && 
+            ((&thread_done_mutex5)->queue.next != NULL)) {
+            thread_done_val = pdTRUE;
+        }
+    }
+
+    /* evaluating test results and freeing memory */
+    free(thread1_stack);
+    free(thread2_stack);
+    free(thread3_stack);
+    free(thread4_stack);
+    free(thread5_stack);
+    if (test_result == pdFAIL || mutex_trylock(&thread_return_value_mutex) == pdFALSE ) {
+        vSemaphoreDelete(testing_semaphore);
+        return pdFAIL;
+    }
+    vSemaphoreDelete(testing_semaphore);
+    return pdPASS;
 }
