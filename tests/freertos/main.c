@@ -84,7 +84,7 @@ static int cmd_test_recursive_mutex(int argc, char **argv)
     (void)argc;
     (void)argv;
     puts("starting test: recursive mutex semaphore");
-    if (semaphore_test_recursive_mutex_take() == pdPASS) {
+    if (semaphore_test_recursive_mutex() == pdPASS) {
         puts("OK");
     }
     else {
