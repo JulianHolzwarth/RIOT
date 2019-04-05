@@ -26,6 +26,7 @@
 
 #include "freertos/FreeRTOS.h"
 #include "semaphore_test.h"
+#include "task_test.h"
 
 /**
  * Foward declarations
@@ -34,6 +35,7 @@ static int cmd_test_mutex(int argc, char **argv);
 static int cmd_test_recursive_mutex(int argc, char **argv);
 static int cmd_test_binary(int argc, char **argv);
 static int cmd_test_counting(int argc, char **argv);
+static int cmd_test_task(int argc, char **argv);
 
 
 
@@ -45,6 +47,7 @@ static const shell_command_t shell_commands[] = {
     { "r_mutex_semaphore", "tests freertos recursive mutex semaphore", cmd_test_recursive_mutex },
     { "binary_semaphore", "tests freertos binary semaphore",  cmd_test_binary },
     { "counting_semaphore", "tests freertos counting semaphore",  cmd_test_counting },
+    { "task", "tests freertos task",  cmd_test_task },
     { NULL, NULL, NULL }
 };
 
@@ -134,6 +137,29 @@ static int cmd_test_counting(int argc, char **argv)
     }
     else {
         puts("counting semaphore test failed");
+    }
+
+    return 0;
+}
+
+/**
+ * @brief   shell command to test freertos task
+ *
+ * @param[in] argc  Number of arguments
+ * @param[in] argv  Array of arguments
+ *
+ * @return 0 on success
+ */
+static int cmd_test_task(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    puts("starting test: task");
+    if (task_test_start() == pdPASS) {
+        puts("OK");
+    }
+    else {
+        puts("task test failed");
     }
 
     return 0;
