@@ -43,8 +43,8 @@ static int cmd_test_counting(int argc, char **argv);
 static const shell_command_t shell_commands[] = {
     { "mutex_semaphore", "tests freertos mutex semaphore", cmd_test_mutex, },
     { "r_mutex_semaphore", "tests freertos recursive mutex semaphore", cmd_test_recursive_mutex },
-    { "binary_semaphore", "tests freertos binary semaphore",  cmd_test_binary},
-    { "counting_semaphore", "tests freertos counting semaphore",  cmd_test_counting},
+    { "binary_semaphore", "tests freertos binary semaphore",  cmd_test_binary },
+    { "counting_semaphore", "tests freertos counting semaphore",  cmd_test_counting },
     { NULL, NULL, NULL }
 };
 
