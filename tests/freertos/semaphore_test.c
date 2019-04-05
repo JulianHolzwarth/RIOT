@@ -41,9 +41,6 @@ static mutex_t thread_done_mutex5;
 /* if locked at least one thread failed the test */
 static mutex_t thread_return_value_mutex;
 
-
-/* give does not work as in freertos: give allways works in riot (gives not owned semaphores) */
-
 /**
  * @brief   threadfunction for the freertos mutex semaphore test and the binary semaphore
  *
@@ -51,7 +48,6 @@ static mutex_t thread_return_value_mutex;
  *
  * @return NULL
  */
-
 static void *semaphore_test_thread(void *parameter)
 {
     SemaphoreHandle_t testing_semaphore = (SemaphoreHandle_t)parameter;
@@ -188,41 +184,6 @@ int semaphore_test_binary(void)
     return semaphore_test_helpfunction(testing_semaphore);
 }
 
-
-/**
- * @brief   tests the take function for a freertos recursive mutex semaphore
- *          NOT USED ANYMORE
- *          TODO DELETE
- *
- * @return pdPASS when the test is passed, pdFAIL otherwise
- */
-int semaphore_test_recursive_mutex_take(void)
-{
-    /* TODO */
-    SemaphoreHandle_t testing_semaphore = xSemaphoreCreateRecursiveMutex();
-
-    if (testing_semaphore == NULL) {
-        puts("test failed: recursive mutex semaphore not created");
-        return pdFAIL;
-    }
-    /*
-     * Freertos Documentation:
-     * "pdPASS: Returned only if the call to xSemaphoreTakeRecursive()
-     * was successful in obtaining the semaphore.",
-     * "once a recursive mutex has been successfully ‘taken’ by a task,
-     * further calls to xSemaphoreTakeRecursive() made by the
-     * same task will also be successful."
-     */
-    for (size_t i = 0; i < 3; i++) {
-        if (xSemaphoreTakeRecursive(testing_semaphore, 0) == pdFAIL) {
-            puts("error in Take");
-            vSemaphoreDelete(testing_semaphore);
-            return pdFAIL;
-        }
-    }
-    return pdPASS;
-}
-
 /**
  * @brief   threadfunction for the freertos recursive recursive mutex semaphore test
  *
@@ -230,7 +191,6 @@ int semaphore_test_recursive_mutex_take(void)
  *
  * @return NULL
  */
-
 static void *semaphore_test_recursive_mutex_thread(void *parameter)
 {
     SemaphoreHandle_t testing_semaphore = (SemaphoreHandle_t)parameter;
