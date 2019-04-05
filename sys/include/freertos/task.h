@@ -14,6 +14,7 @@
 #ifndef DOXYGEN
 
 #include "thread.h"
+#include "FreeRTOS.h"
 
 #ifdef __cplusplus
 extern "C" {
