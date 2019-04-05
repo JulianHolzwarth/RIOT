@@ -58,7 +58,7 @@ BaseType_t xTaskCreatePinnedToCore (TaskFunction_t pvTaskCode,
     char* stack = malloc(usStackDepth + sizeof(thread_t));
 
     if (!stack) {
-        return pdFALSE;
+        return errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY;
     }
     kernel_pid_t pid = thread_create(stack,
                                      usStackDepth + sizeof(thread_t),
@@ -73,7 +73,7 @@ BaseType_t xTaskCreatePinnedToCore (TaskFunction_t pvTaskCode,
         *pxCreatedTask = (TaskHandle_t)(0L + pid);
     }
 
-    return (pid < 0) ? pdFALSE : pdTRUE;
+    return (pid < 0) ? errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY : pdTRUE;
 }
 
 BaseType_t xTaskCreate (TaskFunction_t pvTaskCode,

@@ -21,6 +21,7 @@ extern "C" {
 
 #define xTaskHandle     TaskHandle_t
 #define tskNO_AFFINITY  INT_MAX
+#define errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY pdFAIL
 
 typedef void (*TaskFunction_t)(void *);
 
