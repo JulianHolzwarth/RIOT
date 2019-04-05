@@ -43,7 +43,7 @@ BaseType_t xTaskCreatePinnedToCore (TaskFunction_t pvTaskCode,
                                     const uint32_t usStackDepth,
                                     void * const pvParameters,
                                     UBaseType_t uxPriority,
-                                    TaskHandle_t * const pvCreatedTask,
+                                    TaskHandle_t * const pxCreatedTask,
                                     const BaseType_t xCoreID)
 {
 
@@ -52,8 +52,8 @@ BaseType_t xTaskCreatePinnedToCore (TaskFunction_t pvTaskCode,
     /* FreeRTOS priority values have to be inverted */
     uxPriority = SCHED_PRIO_LEVELS - uxPriority - 1;
 
-    DEBUG("%s name=%s size=%d prio=%d pvCreatedTask=%p ",
-          __func__, pcName, usStackDepth, uxPriority, (void*)pvCreatedTask);
+    DEBUG("%s name=%s size=%d prio=%d pxCreatedTask=%p ",
+          __func__, pcName, usStackDepth, uxPriority, (void*)pxCreatedTask);
 
     char* stack = malloc(usStackDepth + sizeof(thread_t));
 
@@ -69,8 +69,8 @@ BaseType_t xTaskCreatePinnedToCore (TaskFunction_t pvTaskCode,
                                      pvParameters, pcName);
     DEBUG("pid=%d\n", pid);
 
-    if (pvCreatedTask) {
-        *pvCreatedTask = (TaskHandle_t)(0L + pid);
+    if (pxCreatedTask) {
+        *pxCreatedTask = (TaskHandle_t)(0L + pid);
     }
 
     return (pid < 0) ? pdFALSE : pdTRUE;
@@ -81,14 +81,14 @@ BaseType_t xTaskCreate (TaskFunction_t pvTaskCode,
                         const uint32_t usStackDepth,
                         void * const pvParameters,
                         UBaseType_t uxPriority,
-                        TaskHandle_t * const pvCreatedTask)
+                        TaskHandle_t * const pxCreatedTask)
 {
     return xTaskCreatePinnedToCore (pvTaskCode,
                                     pcName,
                                     usStackDepth,
                                     pvParameters,
                                     uxPriority,
-                                    pvCreatedTask,
+                                    pxCreatedTask,
                                     PRO_CPU_NUM);
 }
 
