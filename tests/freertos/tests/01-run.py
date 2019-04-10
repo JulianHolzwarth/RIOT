@@ -44,6 +44,11 @@ def testfunc(child):
     child.expect("OK")
     child.expect_exact("> ")
 
+    child.sendline("timer")
+    child.expect_exact("starting test: timer")
+    child.expect("OK")
+    child.expect_exact("> ")
+
 
 if __name__ == "__main__":
     sys.exit(run(testfunc))
