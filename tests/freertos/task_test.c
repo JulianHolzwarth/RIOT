@@ -33,14 +33,14 @@ typedef struct _task_test_parameter_struct
  */
 int task_test_start(void)
 {
-    puts("not implemented");
     bool test_result = pdPASS;
     mutex_init(&test_mutex);
 
     paramStruct *xParameter = (paramStruct*) malloc(sizeof(paramStruct));
     xParameter->word1 = 'A';
+    xParameter->word2 = 'B';
     TaskHandle_t xHandle;
-    xTaskCreate( task_test_thread, "Demo task", THREAD_STACKSIZE_DEFAULT, (void *) xParameter, THREAD_PRIORITY_MAIN, &xHandle ); 
+    xTaskCreate( task_test_thread, "testing task", THREAD_STACKSIZE_DEFAULT, (void *) xParameter, THREAD_PRIORITY_MAIN, &xHandle ); 
     
     mutex_unlock(&test_mutex);
     vTaskDelay(100);
@@ -51,23 +51,27 @@ int task_test_start(void)
     }
     uint32_t pid = (uint32_t )xHandle;
     thread_t* thread = (thread_t*)sched_threads[pid];
-    printf("status: %u \n", thread->status );
+    if (thread->status == STATUS_STOPPED) {
+        puts("thread stopped before is should have");
+        test_result = pdFAIL;
+    }
     vTaskDelete(xHandle);
-    
-    printf("status: %u \n", thread->status );
+    vTaskDelay(20);
+    if (thread->status != STATUS_STOPPED) {
+        puts("thread did not stop after getting deleted");
+        test_result = pdFAIL;
+    }
 
     mutex_unlock(&test_mutex);
     vTaskDelay(100);
-    /* mutex no longer locked by other thread (deleted thread) */
+    /* mutex no longer locked by other thread (because the thread is deleted) */
     if (mutex_trylock(&test_mutex) == false) {
         puts("task did lock after it got deleted");
         printf("status: %u \n", thread->status );
         test_result = pdFAIL;
     }
     mutex_unlock(&test_mutex);
-    vTaskDelay(100);
     free(xParameter);
-    mutex_unlock(&test_mutex);
     vTaskDelay(100);
     if (test_result == pdFAIL) {
         return pdFAIL;
@@ -84,18 +88,15 @@ int task_test_start(void)
  */
 void task_test_thread(void* pvParameters)
 {
-
+    /* check if Parameter is given correctly */
     paramStruct pxParameters = *( paramStruct * ) pvParameters;
-    if ( pxParameters.word1 !=  'A' ) {
+    if ( pxParameters.word1 !=  'A'  || pxParameters.word2 != 'B') {
         mutex_unlock(&test_mutex);
         return;
     }
+    /* runs until the thread gets deleted */
     while(true) {
-        //mutex_lock(&test_mutex);
-        if (mutex_trylock(&test_mutex) == true) {
-            puts("locking");
-        }
+        mutex_trylock(&test_mutex);
         vTaskDelay(10);
     }
-    
 }
