@@ -51,7 +51,8 @@ TaskHandle_t xTaskGetCurrentTaskHandle (void);
 void vTaskEnterCritical (portMUX_TYPE *mux);
 void vTaskExitCritical (portMUX_TYPE *mux);
 
-//TickType_t xTaskGetTickCount (void);
+TickType_t xTaskGetTickCount (void);
+TickType_t portTICK_RATE_MS(uint32_t ms);
 
 #ifdef __cplusplus
 }

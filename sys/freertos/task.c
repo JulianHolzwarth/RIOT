@@ -99,9 +99,11 @@ void vTaskDelete (TaskHandle_t xTaskToDelete)
     CHECK_PARAM(xTaskToDelete != NULL);
 
     uint32_t pid = (uint32_t)xTaskToDelete;
-
     /* remove old task from scheduling */
     thread_t* thread = (thread_t*)sched_threads[pid];
+    if (thread == NULL) {
+        return;
+    }
     sched_set_status(thread, STATUS_STOPPED);
     sched_threads[pid] = NULL;
     sched_num_threads--;
@@ -125,10 +127,17 @@ void vTaskDelay( const TickType_t xTicksToDelay )
     xtimer_usleep(us);
 }
 
-/*TickType_t xTaskGetTickCount (void)
+/* TODO */
+TickType_t xTaskGetTickCount (void)
 {
-    return system_get_time() / USEC_PER_MSEC / portTICK_PERIOD_MS;
-}*/
+    //return system_get_time() / USEC_PER_MSEC / portTICK_PERIOD_MS;
+    return 1;
+}
+
+inline TickType_t portTICK_RATE_MS(uint32_t ms)
+{
+    return ms * 1000 * xPortGetTickRateHz()/MHZ;
+}
 
 void vTaskEnterCritical( portMUX_TYPE *mux )
 {
@@ -136,7 +145,7 @@ void vTaskEnterCritical( portMUX_TYPE *mux )
     kernel_pid_t my_pid = thread_getpid();
 
     DEBUG("%s pid=%d prio=%d mux=%p\n", __func__,
-          my_pid, sched_threads[my_pid]->priority, (void*)mux);
+         my_pid, sched_threads[my_pid]->priority, (void*)mux);
 
     /* disable interrupts */
     uint32_t state = irq_disable();
@@ -157,7 +166,7 @@ void vTaskExitCritical( portMUX_TYPE *mux )
     kernel_pid_t my_pid = thread_getpid();
 
     DEBUG("%s pid=%d prio=%d mux=%p\n", __func__,
-          my_pid, sched_threads[my_pid]->priority, (void*)mux);
+        my_pid, sched_threads[my_pid]->priority, (void*)mux);
 
     /* release the mutex with interrupts disabled */
     mutex_unlock(mux); /* TODO should be only a spin lock */
