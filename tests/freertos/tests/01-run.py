@@ -49,6 +49,11 @@ def testfunc(child):
     child.expect("OK")
     child.expect_exact("> ")
 
+    child.sendline("queue")
+    child.expect_exact("starting test: queue")
+    child.expect("OK")
+    child.expect_exact("> ")
+
 
 if __name__ == "__main__":
     sys.exit(run(testfunc))

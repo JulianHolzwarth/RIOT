@@ -20,8 +20,7 @@
 /* to test the task */
 static mutex_t test_mutex;
 
-typedef struct _task_test_parameter_struct
-{
+typedef struct{
     char word1;
     char word2;
 } paramStruct;    
@@ -40,10 +39,10 @@ int task_test_start(void)
     xParameter->word1 = 'A';
     xParameter->word2 = 'B';
     TaskHandle_t xHandle;
-    xTaskCreate( task_test_thread, "testing task", THREAD_STACKSIZE_DEFAULT, (void *) xParameter, THREAD_PRIORITY_MAIN, &xHandle ); 
+    xTaskCreate( task_test_thread, "testing task", THREAD_STACKSIZE_DEFAULT, (void *) xParameter, THREAD_PRIORITY_MAIN , &xHandle ); 
     
     mutex_unlock(&test_mutex);
-    vTaskDelay(100);
+    vTaskDelay(portTICK_RATE_MS(10));
     /* mutex gets locked by thread while this thread is delayed */
     if (mutex_trylock(&test_mutex) == true) {
         puts("task did not lock");
@@ -88,15 +87,17 @@ int task_test_start(void)
  */
 void task_test_thread(void* pvParameters)
 {
-    /* check if Parameter is given correctly */
+    /* check if Parameters are correct */
     paramStruct pxParameters = *( paramStruct * ) pvParameters;
     if ( pxParameters.word1 !=  'A'  || pxParameters.word2 != 'B') {
         mutex_unlock(&test_mutex);
+        puts("wrong parameter");
         return;
     }
     /* runs until the thread gets deleted */
     while(true) {
         mutex_trylock(&test_mutex);
         vTaskDelay(10);
+        thread_yield();
     }
 }

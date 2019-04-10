@@ -28,6 +28,7 @@
 #include "semaphore_test.h"
 #include "task_test.h"
 #include "timer_test.h"
+#include "queue_test.h"
 
 /**
  * Foward declarations
@@ -38,6 +39,7 @@ static int cmd_test_binary(int argc, char **argv);
 static int cmd_test_counting(int argc, char **argv);
 static int cmd_test_task(int argc, char **argv);
 static int cmd_test_timer(int argc, char **argv);
+static int cmd_test_queue(int argc, char **argv);
 
 
 
@@ -51,6 +53,7 @@ static const shell_command_t shell_commands[] = {
     { "counting_semaphore", "tests freertos counting semaphore",  cmd_test_counting },
     { "task", "tests freertos task",  cmd_test_task },
     { "timer", "tests freertos timer",  cmd_test_timer },
+    { "queue", "tests freertos queue",  cmd_test_queue },
     { NULL, NULL, NULL }
 };
 
@@ -190,6 +193,30 @@ static int cmd_test_timer(int argc, char **argv)
 
     return 0;
 }
+
+/**
+ * @brief   shell command to test freertos queue
+ *
+ * @param[in] argc  Number of arguments
+ * @param[in] argv  Array of arguments
+ *
+ * @return 0 on success
+ */
+static int cmd_test_queue(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    puts("starting test: queue");
+    if (queue_test_start() == pdPASS) {
+        puts("OK");
+    }
+    else {
+        puts("queue test failed");
+    }
+
+    return 0;
+}
+
 
 /**
  * @brief   main function starting shell

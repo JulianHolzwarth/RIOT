@@ -16,7 +16,7 @@
 #include "freertos/task.h"
 #include "freertos/FreeRTOS.h"
 
-#include "task_test.h"
+#include "timer_test.h"
 
 /* to test the task */
 static mutex_t test_mutex;
@@ -52,7 +52,7 @@ int timer_test_start(void)
         xTimerDelete(testing_timer, 0);
         return test_result;
     }
-    vTaskDelay(10);
+    vTaskDelay(100);
     if (mutex_trylock(&test_mutex) == pdTRUE) {
         test_result = pdFAIL;
     }
