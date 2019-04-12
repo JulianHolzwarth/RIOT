@@ -37,10 +37,10 @@ int task_test_start(void);
  * @brief   thread for the test
  *
  * @param[in] parameter  input of the thread
- * 
+ *
  * @return NULL
  */
-void task_test_thread(void * pvParameters);
+void task_test_thread(void *pvParameters);
 
 #ifdef __cplusplus
 }

@@ -35,27 +35,27 @@ typedef struct {
 } thread_arch_ext_t;
 
 volatile thread_arch_ext_t threads_arch_exts[KERNEL_PID_LAST + 1];
-// = {} 
+// = {}
 
 
-BaseType_t xTaskCreatePinnedToCore (TaskFunction_t pvTaskCode,
-                                    const char * const pcName,
-                                    const uint32_t usStackDepth,
-                                    void * const pvParameters,
-                                    UBaseType_t uxPriority,
-                                    TaskHandle_t * const pxCreatedTask,
-                                    const BaseType_t xCoreID)
+BaseType_t xTaskCreatePinnedToCore(TaskFunction_t pvTaskCode,
+                                   const char *const pcName,
+                                   const uint32_t usStackDepth,
+                                   void *const pvParameters,
+                                   UBaseType_t uxPriority,
+                                   TaskHandle_t *const pxCreatedTask,
+                                   const BaseType_t xCoreID)
 {
 
     /*unused variable*/
-    (void) xCoreID;
+    (void)xCoreID;
     /* FreeRTOS priority values have to be inverted */
     uxPriority = SCHED_PRIO_LEVELS - uxPriority - 1;
 
     DEBUG("%s name=%s size=%d prio=%d pxCreatedTask=%p ",
-          __func__, pcName, usStackDepth, uxPriority, (void*)pxCreatedTask);
+          __func__, pcName, usStackDepth, uxPriority, (void *)pxCreatedTask);
 
-    char* stack = malloc(usStackDepth + sizeof(thread_t));
+    char *stack = malloc(usStackDepth + sizeof(thread_t));
 
     if (!stack) {
         return errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY;
@@ -76,31 +76,31 @@ BaseType_t xTaskCreatePinnedToCore (TaskFunction_t pvTaskCode,
     return (pid < 0) ? errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY : pdTRUE;
 }
 
-BaseType_t xTaskCreate (TaskFunction_t pvTaskCode,
-                        const char * const pcName,
-                        const uint32_t usStackDepth,
-                        void * const pvParameters,
-                        UBaseType_t uxPriority,
-                        TaskHandle_t * const pxCreatedTask)
+BaseType_t xTaskCreate(TaskFunction_t pvTaskCode,
+                       const char *const pcName,
+                       const uint32_t usStackDepth,
+                       void *const pvParameters,
+                       UBaseType_t uxPriority,
+                       TaskHandle_t *const pxCreatedTask)
 {
-    return xTaskCreatePinnedToCore (pvTaskCode,
-                                    pcName,
-                                    usStackDepth,
-                                    pvParameters,
-                                    uxPriority,
-                                    pxCreatedTask,
-                                    PRO_CPU_NUM);
+    return xTaskCreatePinnedToCore(pvTaskCode,
+                                   pcName,
+                                   usStackDepth,
+                                   pvParameters,
+                                   uxPriority,
+                                   pxCreatedTask,
+                                   PRO_CPU_NUM);
 }
 
-void vTaskDelete (TaskHandle_t xTaskToDelete)
+void vTaskDelete(TaskHandle_t xTaskToDelete)
 {
-    DEBUG("%s pid=%d task=%p\n", __func__, thread_getpid(), (void*) xTaskToDelete);
+    DEBUG("%s pid=%d task=%p\n", __func__, thread_getpid(), (void *)xTaskToDelete);
 
     CHECK_PARAM(xTaskToDelete != NULL);
 
     uint32_t pid = (uint32_t)xTaskToDelete;
     /* remove old task from scheduling */
-    thread_t* thread = (thread_t*)sched_threads[pid];
+    thread_t *thread = (thread_t *)sched_threads[pid];
     if (thread == NULL) {
         return;
     }
@@ -124,11 +124,12 @@ TaskHandle_t xTaskGetCurrentTaskHandle(void)
 void vTaskDelay( const TickType_t xTicksToDelay )
 {
     uint64_t us = xTicksToDelay * MHZ / xPortGetTickRateHz();
+
     xtimer_usleep(us);
 }
 
 /* TODO */
-TickType_t xTaskGetTickCount (void)
+TickType_t xTaskGetTickCount(void)
 {
     //return system_get_time() / USEC_PER_MSEC / portTICK_PERIOD_MS;
     return 1;
@@ -136,7 +137,7 @@ TickType_t xTaskGetTickCount (void)
 
 inline TickType_t portTICK_RATE_MS(uint32_t ms)
 {
-    return ms * 1000 * xPortGetTickRateHz()/MHZ;
+    return ms * 1000 * xPortGetTickRateHz() / MHZ;
 }
 
 void vTaskEnterCritical( portMUX_TYPE *mux )
@@ -145,7 +146,7 @@ void vTaskEnterCritical( portMUX_TYPE *mux )
     kernel_pid_t my_pid = thread_getpid();
 
     DEBUG("%s pid=%d prio=%d mux=%p\n", __func__,
-         my_pid, sched_threads[my_pid]->priority, (void*)mux);
+          my_pid, sched_threads[my_pid]->priority, (void *)mux);
 
     /* disable interrupts */
     uint32_t state = irq_disable();
@@ -166,7 +167,7 @@ void vTaskExitCritical( portMUX_TYPE *mux )
     kernel_pid_t my_pid = thread_getpid();
 
     DEBUG("%s pid=%d prio=%d mux=%p\n", __func__,
-        my_pid, sched_threads[my_pid]->priority, (void*)mux);
+          my_pid, sched_threads[my_pid]->priority, (void *)mux);
 
     /* release the mutex with interrupts disabled */
     mutex_unlock(mux); /* TODO should be only a spin lock */

@@ -19,50 +19,50 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
 
-EventGroupHandle_t xEventGroupCreate (void)
+EventGroupHandle_t xEventGroupCreate(void)
 {
     DEBUG_PRINT("%s\n", __func__);
     return NULL;
 }
 
-void vEventGroupDelete (EventGroupHandle_t xEventGroup)
+void vEventGroupDelete(EventGroupHandle_t xEventGroup)
 {
-    (void) xEventGroup;
+    (void)xEventGroup;
     DEBUG_PRINT("%s\n", __func__);
     return;
 }
 
-EventBits_t xEventGroupSetBits (EventGroupHandle_t xEventGroup,
-                                const EventBits_t uxBitsToSet)
+EventBits_t xEventGroupSetBits(EventGroupHandle_t xEventGroup,
+                               const EventBits_t uxBitsToSet)
 {
-    (void) xEventGroup;
-    (void) uxBitsToSet;
+    (void)xEventGroup;
+    (void)uxBitsToSet;
     DEBUG_PRINT("%s\n", __func__);
-    return (EventBits_t) NULL;
+    return (EventBits_t)NULL;
 }
 
-EventBits_t xEventGroupClearBits (EventGroupHandle_t xEventGroup,
-                                  const EventBits_t uxBitsToClear )
+EventBits_t xEventGroupClearBits(EventGroupHandle_t xEventGroup,
+                                 const EventBits_t uxBitsToClear )
 {
-    (void) xEventGroup;
-    (void) uxBitsToClear;
+    (void)xEventGroup;
+    (void)uxBitsToClear;
     DEBUG_PRINT("%s\n", __func__);
-    return (EventBits_t) NULL;
+    return (EventBits_t)NULL;
 }
 
-EventBits_t xEventGroupWaitBits (const EventGroupHandle_t xEventGroup,
-                                 const EventBits_t uxBitsToWaitFor,
-                                 const BaseType_t xClearOnExit,
-                                 const BaseType_t xWaitForAllBits,
-                                 TickType_t xTicksToWait)
+EventBits_t xEventGroupWaitBits(const EventGroupHandle_t xEventGroup,
+                                const EventBits_t uxBitsToWaitFor,
+                                const BaseType_t xClearOnExit,
+                                const BaseType_t xWaitForAllBits,
+                                TickType_t xTicksToWait)
 {
-    (void) xEventGroup;
-    (void) uxBitsToWaitFor;
-    (void) xClearOnExit;
-    (void) xWaitForAllBits;
-    (void) xTicksToWait;
+    (void)xEventGroup;
+    (void)uxBitsToWaitFor;
+    (void)xClearOnExit;
+    (void)xWaitForAllBits;
+    (void)xTicksToWait;
     DEBUG_PRINT("%s\n", __func__);
-    return (EventBits_t) NULL;
+    return (EventBits_t)NULL;
 }
 
 #endif /* DOXYGEN */

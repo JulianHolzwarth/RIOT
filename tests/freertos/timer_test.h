@@ -33,7 +33,6 @@ extern "C" {
  */
 int timer_test_start(void);
 
-
 #ifdef __cplusplus
 }
 #endif

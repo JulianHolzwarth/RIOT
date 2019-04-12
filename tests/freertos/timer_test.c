@@ -20,11 +20,11 @@
 
 /* to test the task */
 static mutex_t test_mutex;
- 
+
 
 static void vTimerCallback(TimerHandle_t xTimer)
 {
-    (void) xTimer;
+    (void)xTimer;
     mutex_trylock(&test_mutex);
     //puts("time !");
 
@@ -39,9 +39,11 @@ static void vTimerCallback(TimerHandle_t xTimer)
 int timer_test_start(void)
 {
     bool test_result = pdPASS;
+
     mutex_init(&test_mutex);
+
     TimerHandle_t testing_timer;
-    testing_timer = xTimerCreate("test_timer", 10, pdTRUE, ( void * ) 0, vTimerCallback);
+    testing_timer = xTimerCreate("test_timer", 10, pdTRUE, ( void * )0, vTimerCallback);
     if (testing_timer == NULL) {
         puts("timer creation error");
         return pdFAIL;
@@ -66,7 +68,7 @@ int timer_test_start(void)
         puts("timer delete error");
         test_result = pdFAIL;
     }
-    
+
     if (test_result == pdFAIL) {
         return pdFAIL;
     }

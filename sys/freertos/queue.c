@@ -59,31 +59,31 @@ QueueHandle_t xQueueGenericCreate( const UBaseType_t uxQueueLength,
           thread_getpid(), uxQueueLength, uxItemSize, ucQueueType);
 
     uint32_t queue_size = uxQueueLength * uxItemSize;
-    _queue_t* queue = malloc(sizeof(_queue_t) + queue_size);
+    _queue_t *queue = malloc(sizeof(_queue_t) + queue_size);
 
     mutex_init(&queue->mutex);
 
     queue->type = ucQueueType;
     queue->receiving.next = NULL;
     queue->sending.next = NULL;
-    queue->queue = (queue_size) ? (uint8_t*)queue + sizeof(_queue_t) : NULL;
+    queue->queue = (queue_size) ? (uint8_t *)queue + sizeof(_queue_t) : NULL;
     queue->item_num = uxQueueLength;
     queue->item_size = uxItemSize;
     queue->item_front = 0;
     queue->item_tail = 0;
     queue->item_level = 0;
 
-    DEBUG("queue=%p\n", (void*)queue);
+    DEBUG("queue=%p\n", (void *)queue);
 
     return queue;
 }
 
-#define queueSEMAPHORE_QUEUE_ITEM_LENGTH ( ( UBaseType_t ) 0 )
+#define queueSEMAPHORE_QUEUE_ITEM_LENGTH (( UBaseType_t )0)
 
-QueueHandle_t xQueueCreateCountingSemaphore (const UBaseType_t uxMaxCount,
-                                             const UBaseType_t uxInitialCount)
+QueueHandle_t xQueueCreateCountingSemaphore(const UBaseType_t uxMaxCount,
+                                            const UBaseType_t uxInitialCount)
 {
-    _queue_t* queue;
+    _queue_t *queue;
 
     CHECK_PARAM_RET(uxMaxCount != 0, NULL);
     CHECK_PARAM_RET(uxInitialCount <= uxMaxCount, NULL);
@@ -91,7 +91,7 @@ QueueHandle_t xQueueCreateCountingSemaphore (const UBaseType_t uxMaxCount,
     queue = xQueueGenericCreate(uxMaxCount, queueSEMAPHORE_QUEUE_ITEM_LENGTH,
                                 queueQUEUE_TYPE_COUNTING_SEMAPHORE);
 
-    DEBUG("%s pid=%d queue=%p\n", __func__, thread_getpid(), (void*)queue);
+    DEBUG("%s pid=%d queue=%p\n", __func__, thread_getpid(), (void *)queue);
 
     if (queue != NULL) {
         queue->item_level = uxInitialCount;
@@ -103,23 +103,23 @@ QueueHandle_t xQueueCreateCountingSemaphore (const UBaseType_t uxMaxCount,
 
 void vQueueDelete( QueueHandle_t xQueue )
 {
-    DEBUG("%s pid=%d queue=%p\n", __func__, thread_getpid(), (void*)xQueue);
+    DEBUG("%s pid=%d queue=%p\n", __func__, thread_getpid(), (void *)xQueue);
 
     CHECK_PARAM(xQueue != NULL);
     free(xQueue);
 }
 
 BaseType_t _queue_generic_send(QueueHandle_t xQueue,
-                                         const void * const pvItemToQueue,
-                                         const BaseType_t xCopyPosition,
-                                         TickType_t xTicksToWait,
-                                         BaseType_t * const pxHigherPriorityTaskWoken)
+                               const void *const pvItemToQueue,
+                               const BaseType_t xCopyPosition,
+                               TickType_t xTicksToWait,
+                               BaseType_t *const pxHigherPriorityTaskWoken)
 {
     DEBUG("%s pid=%d prio=%d queue=%p pos=%d wait=%u woken=%p\n", __func__,
           thread_getpid(), sched_threads[thread_getpid()]->priority,
-          (void*)xQueue, xCopyPosition, xTicksToWait, (void*)pxHigherPriorityTaskWoken);
+          (void *)xQueue, xCopyPosition, xTicksToWait, (void *)pxHigherPriorityTaskWoken);
 
-    _queue_t* queue = (_queue_t*)xQueue;
+    _queue_t *queue = (_queue_t *)xQueue;
 
     CHECK_PARAM_RET(queue != NULL, pdFAIL);
 
@@ -156,7 +156,7 @@ BaseType_t _queue_generic_send(QueueHandle_t xQueue,
             /* unlock waiting receiving thread */
             if (queue->receiving.next != NULL) {
                 list_node_t *next = list_remove_head(&queue->receiving);
-                thread_t *process = container_of((clist_node_t*)next, thread_t, rq_entry);
+                thread_t *process = container_of((clist_node_t *)next, thread_t, rq_entry);
                 uint8_t process_priority = process->priority;
                 uint8_t my_priority = sched_threads[thread_getpid()]->priority;
 
@@ -187,7 +187,7 @@ BaseType_t _queue_generic_send(QueueHandle_t xQueue,
         }
         else {
             /* suspend the calling thread to wait for space in the queue */
-            thread_t *me = (thread_t*)sched_active_thread;
+            thread_t *me = (thread_t *)sched_active_thread;
             sched_set_status(me, STATUS_SEND_BLOCKED);
             /* waiting list is sorted by priority */
             thread_add_to_list(&queue->sending, me);
@@ -206,17 +206,17 @@ BaseType_t _queue_generic_send(QueueHandle_t xQueue,
     return errQUEUE_FULL;
 }
 
-BaseType_t _queue_generic_recv (QueueHandle_t xQueue,
-                                          void * const pvBuffer,
-                                          TickType_t xTicksToWait,
-                                          const BaseType_t xJustPeeking,
-                                          BaseType_t * const pxHigherPriorityTaskWoken)
+BaseType_t _queue_generic_recv(QueueHandle_t xQueue,
+                               void *const pvBuffer,
+                               TickType_t xTicksToWait,
+                               const BaseType_t xJustPeeking,
+                               BaseType_t *const pxHigherPriorityTaskWoken)
 {
     DEBUG("%s pid=%d prio=%d queue=%p wait=%u peek=%u woken=%p\n", __func__,
           thread_getpid(), sched_threads[thread_getpid()]->priority,
-          (void*)xQueue, xTicksToWait, xJustPeeking, (void*)pxHigherPriorityTaskWoken);
+          (void *)xQueue, xTicksToWait, xJustPeeking, (void *)pxHigherPriorityTaskWoken);
 
-    _queue_t* queue = (_queue_t*)xQueue;
+    _queue_t *queue = (_queue_t *)xQueue;
 
     CHECK_PARAM_RET(queue != NULL, pdFAIL);
 
@@ -248,7 +248,7 @@ BaseType_t _queue_generic_recv (QueueHandle_t xQueue,
                 /* unlock waiting sending thread */
                 if (queue->sending.next != NULL) {
                     list_node_t *next = list_remove_head(&queue->sending);
-                    thread_t *process = container_of((clist_node_t*)next,
+                    thread_t *process = container_of((clist_node_t *)next,
                                                      thread_t, rq_entry);
                     uint16_t process_priority = process->priority;
                     uint8_t my_priority = sched_threads[thread_getpid()]->priority;
@@ -273,7 +273,7 @@ BaseType_t _queue_generic_recv (QueueHandle_t xQueue,
         }
         else {
             /* suspend the calling thread to wait for an item in the queue */
-            thread_t *me = (thread_t*)sched_active_thread;
+            thread_t *me = (thread_t *)sched_active_thread;
             sched_set_status(me, STATUS_RECEIVE_BLOCKED);
             /* waiting list is sorted by priority */
             thread_add_to_list(&queue->receiving, me);
@@ -292,9 +292,9 @@ BaseType_t _queue_generic_recv (QueueHandle_t xQueue,
 }
 
 BaseType_t xQueueGenericSend( QueueHandle_t xQueue,
-                                        const void * const pvItemToQueue,
-                                        TickType_t xTicksToWait,
-                                        const BaseType_t xCopyPosition )
+                              const void *const pvItemToQueue,
+                              TickType_t xTicksToWait,
+                              const BaseType_t xCopyPosition )
 {
     DEBUG("%s pid=%d prio=%d queue=%p wait=%u pos=%d\n", __func__,
           thread_getpid(), sched_threads[thread_getpid()]->priority,
@@ -305,22 +305,22 @@ BaseType_t xQueueGenericSend( QueueHandle_t xQueue,
 }
 
 BaseType_t xQueueGenericSendFromISR( QueueHandle_t xQueue,
-                                               const void * const pvItemToQueue,
-                                               BaseType_t * const pxHigherPriorityTaskWoken,
-                                               const BaseType_t xCopyPosition )
+                                     const void *const pvItemToQueue,
+                                     BaseType_t *const pxHigherPriorityTaskWoken,
+                                     const BaseType_t xCopyPosition )
 {
     DEBUG("%s pid=%d prio=%d queue=%p pos=%d woken=%p\n", __func__,
           thread_getpid(), sched_threads[thread_getpid()]->priority,
-          (void*)xQueue, xCopyPosition, (void*)pxHigherPriorityTaskWoken);
+          (void *)xQueue, xCopyPosition, (void *)pxHigherPriorityTaskWoken);
 
     return _queue_generic_send(xQueue, pvItemToQueue, xCopyPosition,
                                0, pxHigherPriorityTaskWoken);
 }
 
-BaseType_t xQueueGenericReceive (QueueHandle_t xQueue,
-                                           void * const pvBuffer,
-                                           TickType_t xTicksToWait,
-                                           const BaseType_t xJustPeeking)
+BaseType_t xQueueGenericReceive(QueueHandle_t xQueue,
+                                void *const pvBuffer,
+                                TickType_t xTicksToWait,
+                                const BaseType_t xJustPeeking)
 {
     DEBUG("%s pid=%d prio=%d queue=%p wait=%u peek=%d\n", __func__,
           thread_getpid(), sched_threads[thread_getpid()]->priority,
@@ -330,13 +330,13 @@ BaseType_t xQueueGenericReceive (QueueHandle_t xQueue,
                                xJustPeeking, NULL);
 }
 
-BaseType_t xQueueReceiveFromISR (QueueHandle_t xQueue,
-                                           void * const pvBuffer,
-                                           BaseType_t * const pxHigherPriorityTaskWoken)
+BaseType_t xQueueReceiveFromISR(QueueHandle_t xQueue,
+                                void *const pvBuffer,
+                                BaseType_t *const pxHigherPriorityTaskWoken)
 {
     DEBUG("%s pid=%d prio=%d queue=%p woken=%p\n", __func__,
           thread_getpid(), sched_threads[thread_getpid()]->priority,
-          (void*)xQueue, (void*)pxHigherPriorityTaskWoken);
+          (void *)xQueue, (void *)pxHigherPriorityTaskWoken);
 
     return _queue_generic_recv(xQueue, pvBuffer, 0,
                                0, pxHigherPriorityTaskWoken);
@@ -344,18 +344,18 @@ BaseType_t xQueueReceiveFromISR (QueueHandle_t xQueue,
 
 UBaseType_t uxQueueMessagesWaiting( QueueHandle_t xQueue )
 {
-    _queue_t* queue = (_queue_t*)xQueue;
+    _queue_t *queue = (_queue_t *)xQueue;
 
     CHECK_PARAM_RET(queue != NULL, 0);
 
     return queue->item_level;
 }
 
-BaseType_t xQueueGiveFromISR (QueueHandle_t xQueue,
-                              BaseType_t * const pxHigherPriorityTaskWoken)
+BaseType_t xQueueGiveFromISR(QueueHandle_t xQueue,
+                             BaseType_t *const pxHigherPriorityTaskWoken)
 {
-    (void) xQueue;
-    (void) pxHigherPriorityTaskWoken;
+    (void)xQueue;
+    (void)pxHigherPriorityTaskWoken;
     DEBUG_PRINT("%s\n", __func__);
     return pdFALSE;
 }

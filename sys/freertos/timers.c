@@ -31,11 +31,11 @@ typedef struct {
     TimerCallbackFunction_t cb; /* FreeRTOS callback function */
 } freertos_xtimer_t;
 
-static void _xtimer_callback (void *arg)
+static void _xtimer_callback(void *arg)
 {
     CHECK_PARAM(arg != NULL);
 
-    freertos_xtimer_t* timer = (freertos_xtimer_t*)arg;
+    freertos_xtimer_t *timer = (freertos_xtimer_t *)arg;
 
     if (timer->autoreload) {
         xtimer_set(&timer->xtimer, timer->period);
@@ -46,13 +46,14 @@ static void _xtimer_callback (void *arg)
     }
 }
 
-TimerHandle_t xTimerCreate (const char * const pcTimerName,
-                            const TickType_t xTimerPeriod,
-                            const UBaseType_t uxAutoReload,
-                            void * const pvTimerID,
-                            TimerCallbackFunction_t pxCallbackFunction)
+TimerHandle_t xTimerCreate(const char *const pcTimerName,
+                           const TickType_t xTimerPeriod,
+                           const UBaseType_t uxAutoReload,
+                           void *const pvTimerID,
+                           TimerCallbackFunction_t pxCallbackFunction)
 {
-    freertos_xtimer_t* timer = malloc(sizeof(freertos_xtimer_t));
+    freertos_xtimer_t *timer = malloc(sizeof(freertos_xtimer_t));
+
     if (timer == NULL) {
         return NULL;
     }
@@ -73,33 +74,33 @@ TimerHandle_t xTimerCreate (const char * const pcTimerName,
 
 BaseType_t xTimerDelete(TimerHandle_t xTimer, TickType_t xBlockTime)
 {
-    (void) xBlockTime;
+    (void)xBlockTime;
     CHECK_PARAM_RET(xTimer != NULL, pdFALSE);
 
-    freertos_xtimer_t* timer = (freertos_xtimer_t*)xTimer;
+    freertos_xtimer_t *timer = (freertos_xtimer_t *)xTimer;
     xtimer_remove(&timer->xtimer);
     free(timer);
 
     return pdTRUE;
 }
 
-BaseType_t xTimerStart (TimerHandle_t xTimer, TickType_t xBlockTime)
+BaseType_t xTimerStart(TimerHandle_t xTimer, TickType_t xBlockTime)
 {
-    (void) xBlockTime;
+    (void)xBlockTime;
     CHECK_PARAM_RET(xTimer != NULL, pdFALSE);
 
-    freertos_xtimer_t* timer = (freertos_xtimer_t*)xTimer;
+    freertos_xtimer_t *timer = (freertos_xtimer_t *)xTimer;
     xtimer_set(&timer->xtimer, timer->period);
 
     return pdTRUE;
 }
 
-BaseType_t xTimerStop  (TimerHandle_t xTimer, TickType_t xBlockTime)
+BaseType_t xTimerStop(TimerHandle_t xTimer, TickType_t xBlockTime)
 {
-    (void) xBlockTime;
+    (void)xBlockTime;
     CHECK_PARAM_RET(xTimer != NULL, pdFALSE);
 
-    freertos_xtimer_t* timer = (freertos_xtimer_t*)xTimer;
+    freertos_xtimer_t *timer = (freertos_xtimer_t *)xTimer;
     xtimer_remove(&timer->xtimer);
 
     return pdTRUE;

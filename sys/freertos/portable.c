@@ -20,7 +20,8 @@
 
 #include "freertos/FreeRTOS.h"
 
-uint32_t xPortGetTickRateHz(void) {
+uint32_t xPortGetTickRateHz(void)
+{
     return MSEC_PER_SEC / portTICK_PERIOD_MS;
 }
 
