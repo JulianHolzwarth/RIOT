@@ -16,15 +16,18 @@
 #include <string.h>
 
 #include "log.h"
-//#include "syscalls.h"
 #include "thread.h"
 #include "xtimer.h"
+
+#ifdef CPU_ESP32
+    #include "syscalls.h"
+#else
+    #include "periph/timer.h"
+#endif
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/defines.h"
-
-#define MHZ 1000000
 
 /**
  * @brief   Architecture specific data of thread control blocks
@@ -128,11 +131,13 @@ void vTaskDelay( const TickType_t xTicksToDelay )
     xtimer_usleep(us);
 }
 
-/* TODO */
 TickType_t xTaskGetTickCount(void)
 {
-    //return system_get_time() / USEC_PER_MSEC / portTICK_PERIOD_MS;
-    return 1;
+#ifdef CPU_ESP32
+    return system_get_time() / USEC_PER_MSEC / portTICK_PERIOD_MS;
+#else
+    return timer_read(XTIMER_DEV) / USEC_PER_MSEC / portTICK_PERIOD_MS;
+#endif
 }
 
 inline TickType_t portTICK_RATE_MS(uint32_t ms)

@@ -25,7 +25,13 @@ extern "C" {
 #define configASSERT    assert
 #endif
 
+#ifndef portTICK_PERIOD_MS
 #define portTICK_PERIOD_MS      10
+#endif
+
+#ifndef MHZ
+#define MHZ 1000000
+#endif
 #define portTickType            TickType_t
 
 typedef int32_t  BaseType_t;
