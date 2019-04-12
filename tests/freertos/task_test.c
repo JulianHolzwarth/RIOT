@@ -15,7 +15,7 @@
 #include "freertos/task.h"
 #include "freertos/FreeRTOS.h"
 
-#include "task_test.h"
+#include "include/task_test.h"
 
 /* to test the task */
 static mutex_t test_mutex;

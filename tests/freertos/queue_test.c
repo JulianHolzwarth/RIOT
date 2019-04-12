@@ -14,7 +14,7 @@
 #include "freertos/task.h"
 #include "freertos/FreeRTOS.h"
 
-#include "queue_test.h"
+#include "include/queue_test.h"
 
 /* to test */
 static mutex_t test_mutex;

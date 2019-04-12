@@ -18,7 +18,7 @@
 #include "freertos/queue.h"
 #include "freertos/FreeRTOS.h"
 
-#include "semaphore_test.h"
+#include "include/semaphore_test.h"
 
 #ifndef SEMAPHORE_TEST_FOR_COUNTER
 #define SEMAPHORE_TEST_FOR_COUNTER 100

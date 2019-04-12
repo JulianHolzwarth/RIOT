@@ -16,7 +16,7 @@
 #include "freertos/task.h"
 #include "freertos/FreeRTOS.h"
 
-#include "timer_test.h"
+#include "include/timer_test.h"
 
 /* to test the task */
 static mutex_t test_mutex;

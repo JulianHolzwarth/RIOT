@@ -25,10 +25,11 @@
 #include "shell.h"
 
 #include "freertos/FreeRTOS.h"
-#include "semaphore_test.h"
-#include "task_test.h"
-#include "timer_test.h"
-#include "queue_test.h"
+
+#include "include/semaphore_test.h"
+#include "include/task_test.h"
+#include "include/timer_test.h"
+#include "include/queue_test.h"
 
 /**
  * Foward declarations
