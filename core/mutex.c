@@ -103,12 +103,10 @@ void mutex_unlock(mutex_t *mutex)
         }
         if (!mutex->queue.next) {
             /* there is no thread waiting that has not stopped */
-            mutex->queue.next = NULL;
             irq_restore(irqstate);
             return;
         }
     }
-
 
     DEBUG("mutex_unlock: waking up waiting thread %" PRIkernel_pid "\n",
           process->pid);
@@ -134,14 +132,20 @@ void mutex_unlock_and_sleep(mutex_t *mutex)
             mutex->queue.next = NULL;
         }
         else {
-            list_node_t *next = list_remove_head(&mutex->queue);
-            thread_t *process = container_of((clist_node_t*)next, thread_t,
-                                             rq_entry);
-            DEBUG("PID[%" PRIkernel_pid "]: waking up waiter.\n", process->pid);
-            sched_set_status(process, STATUS_PENDING);
-            if (!mutex->queue.next) {
-                mutex->queue.next = MUTEX_LOCKED;
-            }
+            while (mutex->queue.next) {
+
+                list_node_t *next = list_remove_head(&mutex->queue);
+                thread_t *process = container_of((clist_node_t*)next, thread_t,
+                                                rq_entry);
+                if (process->status != STATUS_STOPPED) {
+                    DEBUG("PID[%" PRIkernel_pid "]: waking up waiter.\n", process->pid);
+                    sched_set_status(process, STATUS_PENDING);
+                    if (!mutex->queue.next) {
+                        mutex->queue.next = MUTEX_LOCKED;
+                    }
+                    break;
+                }
+            } 
         }
     }
 
