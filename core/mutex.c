@@ -93,10 +93,10 @@ void mutex_unlock(mutex_t *mutex)
     list_node_t *next;
     thread_t *process;
     /* remove stopped threads */
-    while(true){
+    while (true) {
         next = list_remove_head(&mutex->queue);
 
-        process = container_of((clist_node_t*)next, thread_t, rq_entry);
+        process = container_of((clist_node_t *)next, thread_t, rq_entry);
 
         if (process->status != STATUS_STOPPED) {
             break;
@@ -108,7 +108,7 @@ void mutex_unlock(mutex_t *mutex)
             return;
         }
     }
-    
+
 
     DEBUG("mutex_unlock: waking up waiting thread %" PRIkernel_pid "\n",
           process->pid);
