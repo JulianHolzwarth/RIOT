@@ -68,6 +68,30 @@ int task_test_start(void)
     return pdPASS;
 }
 
+task_test_create()
+{
+    paramStruct *xParameter = &global_xParameter;
+    xParameter->word1 = 'A';
+    xParameter->word2 = 'B';
+    TaskHandle_t xHandle;
+    xTaskCreate( task_test_thread, "testing task", THREAD_STACKSIZE_DEFAULT, (void *)xParameter, THREAD_PRIORITY_MAIN, &xHandle );
+    return pdPASS;
+}
+
+task_test_delete()
+{
+    TaskHandle_t xHandle;
+    xTaskCreate( task_test_thread, "testing task", THREAD_STACKSIZE_DEFAULT, NULL, THREAD_PRIORITY_MAIN, &xHandle );
+
+    return pdPASS;
+}
+
+task_test_delay()
+{
+
+    return pdPASS;
+}
+
 /**
  * @brief   thread for the test
  *
