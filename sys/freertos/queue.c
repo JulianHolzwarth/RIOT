@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2018 Gunar Schorcht
+ * Copyright (C) 2019 Freie Universitaet Berlin
  *
  * This file is subject to the terms and conditions of the GNU Lesser
  * General Public License v2.1. See the file LICENSE in the top level
@@ -60,6 +61,10 @@ QueueHandle_t xQueueGenericCreate( const UBaseType_t uxQueueLength,
 
     uint32_t queue_size = uxQueueLength * uxItemSize;
     _queue_t *queue = malloc(sizeof(_queue_t) + queue_size);
+
+    if (queue == NULL) {
+        return NULL;
+    }
 
     mutex_init(&queue->mutex);
 

@@ -1,11 +1,25 @@
 /*
  * Copyright (C) 2018 Gunar Schorcht
+ * Copyright (C) 2019 Freie Universitaet Berlin
  *
  * This file is subject to the terms and conditions of the GNU Lesser
  * General Public License v2.1. See the file LICENSE in the top level
  * directory for more details.
  *
+ */
+
+/**
+ * @ingroup     sys_freertos
+ * @{
+ *
+ * @file
+ * @brief       freertos defines
+ * 
  * FreeRTOS to RIOT-OS adaption module for source code compatibility
+ *
+ * @author      Gunar Schorcht
+ * @author      Julian Holzwarth <julian.holzwarth@fu-berlin.de>
+ *
  */
 
 #ifndef FREERTOS_FREERTOS_H
@@ -38,7 +52,18 @@ typedef int32_t  BaseType_t;
 typedef uint32_t UBaseType_t;
 typedef uint32_t TickType_t;
 
+/**
+ * @brief   return the freertos tickrate
+ *
+ * @return tickrate
+ */
 uint32_t xPortGetTickRateHz(void);
+
+/**
+ * @brief   returns the isr context
+ *
+ * @return true, if in isr context, false if not
+ */
 BaseType_t xPortInIsrContext(void);
 
 /*

@@ -1,11 +1,27 @@
 /*
  * Copyright (C) 2018 Gunar Schorcht
+ * Copyright (C) 2019 Freie Universitaet Berlin
  *
  * This file is subject to the terms and conditions of the GNU Lesser
  * General Public License v2.1. See the file LICENSE in the top level
  * directory for more details.
  *
+ */
+
+/**
+ * @ingroup     sys_freertos
+ * @{
+ *
+ * @file
+ * @brief       Implementation of freertos tasks
+ * 
  * FreeRTOS to RIOT-OS adaption module for source code compatibility
+ * Implemented is the creation of a freetos task, the delay and
+ * delete. The scheduler is still riots.
+ *
+ * @author      Gunar Schorcht
+ * @author      Julian Holzwarth <julian.holzwarth@fu-berlin.de>
+ *
  */
 
 #ifndef FREERTOS_TASK_H

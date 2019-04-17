@@ -1,11 +1,25 @@
 /*
  * Copyright (C) 2018 Gunar Schorcht
+ * Copyright (C) 2019 Freie Universitaet Berlin
  *
  * This file is subject to the terms and conditions of the GNU Lesser
  * General Public License v2.1. See the file LICENSE in the top level
  * directory for more details.
  *
+ */
+
+/**
+ * @ingroup     sys_freertos
+ * @{
+ *
+ * @file
+ * @brief       Implementation of freertos queue and freertos counting semaphore
+ * 
  * FreeRTOS to RIOT-OS adaption module for source code compatibility
+ *
+ * @author      Gunar Schorcht
+ * @author      Julian Holzwarth <julian.holzwarth@fu-berlin.de>
+ *
  */
 
 #ifndef FREERTOS_QUEUE_H
@@ -23,17 +37,41 @@ extern "C" {
 
 typedef void* QueueHandle_t;
 
+/**
+ * @brief   creates a generic queue
+ *
+ * @return the queue handle, NULL if not successful
+ */
 QueueHandle_t xQueueGenericCreate (const UBaseType_t uxQueueLength,
                                    const UBaseType_t uxItemSize,
                                    const uint8_t ucQueueType);
 
+/**
+ * @brief   creates a counting semaphore as a queue
+ *
+ * @return the queue handle, NULL if not successful
+ */
 QueueHandle_t xQueueCreateCountingSemaphore (const UBaseType_t uxMaxCount,
                                              const UBaseType_t uxInitialCount);
 
+/**
+ * @brief   deletes a queue
+ * 
+ */
 void vQueueDelete (QueueHandle_t xQueue);
 
+/**
+ * @brief   resets a queue
+ *
+ * @return the queue handle, NULL if not successful
+ */
 BaseType_t xQueueGenericReset (QueueHandle_t xQueue, BaseType_t xNewQueue);
 
+/**
+ * @brief   receive for queue
+ *
+ * @return the queue handle, NULL if not successful
+ */
 BaseType_t xQueueGenericReceive (QueueHandle_t xQueue,
                                  void * const pvBuffer,
                                  TickType_t xTicksToWait,

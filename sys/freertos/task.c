@@ -98,22 +98,11 @@ BaseType_t xTaskCreate(TaskFunction_t pvTaskCode,
 void vTaskDelete(TaskHandle_t xTaskToDelete)
 {
     DEBUG("%s pid=%d task=%p\n", __func__, thread_getpid(), (void *)xTaskToDelete);
+    assert(xTaskToDelete == NULL);
 
-    CHECK_PARAM(xTaskToDelete != NULL);
-
-    uint32_t pid = (uint32_t)xTaskToDelete;
-    /* remove old task from scheduling */
-    thread_t *thread = (thread_t *)sched_threads[pid];
-    if (thread == NULL) {
-        return;
+    if (xTaskToDelete == NULL) {
+        sched_task_exit();
     }
-    sched_set_status(thread, STATUS_STOPPED);
-    sched_threads[pid] = NULL;
-    sched_num_threads--;
-    sched_active_thread = NULL;
-
-    /* determine the new running task */
-    sched_run();
 }
 
 TaskHandle_t xTaskGetCurrentTaskHandle(void)
@@ -136,7 +125,7 @@ TickType_t xTaskGetTickCount(void)
 #ifdef CPU_ESP32
     return system_get_time() / USEC_PER_MSEC / portTICK_PERIOD_MS;
 #else
-    return timer_read(XTIMER_DEV) / USEC_PER_MSEC / portTICK_PERIOD_MS;
+    return xtimer_now_usec64() / USEC_PER_MSEC / portTICK_PERIOD_MS;
 #endif
 }
 

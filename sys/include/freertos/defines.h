@@ -1,17 +1,64 @@
+/*
+ * Copyright (C) 2018 Gunar Schorcht
+ * Copyright (C) 2019 Freie Universitaet Berlin
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
+ *
+ */
 
-/* for general defines freertos needs*/
+/**
+ * @ingroup     sys_freertos
+ * @{
+ *
+ * @file
+ * @brief       general defines for freertos
+ * 
+ * FreeRTOS to RIOT-OS adaption module for source code compatibility
+ * copied from cpu/esp32/include/esp_common.h and
+ * copied from cpu/esp32/include/irq_arch.h
+ * 
+ *
+ * @author      Gunar Schorcht
+ * @author      Julian Holzwarth <julian.holzwarth@fu-berlin.de>
+ *
+ */
 
-/* copied from cpu/esp32/include/esp_common.h */
+#ifndef FREERTOS_DEFINES_H
+#define FREERTOS_DEFINES_H
 
-/** microseconds per millisecond */
+#ifndef DOXYGEN
+
+#include "freertos/FreeRTOS.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+/**
+ * @brief   microseconds per millisecond
+ * 
+ */
 #ifndef USEC_PER_MSEC
 #define USEC_PER_MSEC 1000UL
 #endif
 
+/**
+ * @brief   millisecond per second
+ * 
+ */
 #ifndef MSEC_PER_SEC
 #define MSEC_PER_SEC  1000UL
 #endif
 
+/**
+ * @brief   the primary cpu
+ * 
+ * the freertos implementation only supports this cpu
+ * 
+ */
 #ifndef PRO_CPU_NUM
 #define PRO_CPU_NUM (0)
 #endif
@@ -75,3 +122,12 @@
 #define critical_enter()   int _irq_state = irq_disable ()
 
 #define critical_exit()    irq_restore(_irq_state)
+
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* DOXYGEN */
+
+#endif /* FREERTOS_DEFINES_H */
