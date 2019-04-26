@@ -14,9 +14,9 @@
  *
  * @file
  * @brief       freertos portmacro
- * 
+ *
  * FreeRTOS to RIOT-OS adaption module for source code compatibility
- * makro defines for critical sections and ports 
+ * makro defines for critical sections and ports
  *
  * @author      Gunar Schorcht
  * @author      Julian Holzwarth <julian.holzwarth@fu-berlin.de>
@@ -67,5 +67,5 @@ extern "C" {
 }
 #endif
 
-#endif /* DOXYGEN */
-#endif /* FREERTOS_PORTMACRO_H */
+#endif  /* DOXYGEN */
+#endif  /* FREERTOS_PORTMACRO_H */

@@ -23,11 +23,11 @@
 #include "freertos/defines.h"
 
 typedef struct {
-    xtimer_t    xtimer;         /* xtimer object */
-    const char* name;           /* FreeRTOS timer name */
-    uint32_t    period;         /* in us */
-    bool        autoreload;     /* FreeRTOS timer reload indicator */
-    const void* timerid;        /* FreeRTOS timer id */
+    xtimer_t xtimer;            /* xtimer object */
+    const char *name;           /* FreeRTOS timer name */
+    uint32_t period;            /* in us */
+    bool autoreload;            /* FreeRTOS timer reload indicator */
+    void *timerid;              /* FreeRTOS timer id */
     TimerCallbackFunction_t cb; /* FreeRTOS callback function */
 } freertos_xtimer_t;
 
@@ -104,6 +104,20 @@ BaseType_t xTimerStop(TimerHandle_t xTimer, TickType_t xBlockTime)
     xtimer_remove(&timer->xtimer);
 
     return pdTRUE;
+}
+
+void *pvTimerGetTimerID(TimerHandle_t xTimer)
+{
+    CHECK_PARAM_RET(xTimer != NULL, pdFALSE);
+    freertos_xtimer_t *timer = (freertos_xtimer_t *)xTimer;
+    return timer->timerid;
+}
+
+void vTimerSetTimerID(TimerHandle_t xTimer, void *pvNewID)
+{
+    CHECK_PARAM(xTimer != NULL);
+    freertos_xtimer_t *timer = (freertos_xtimer_t *)xTimer;
+    timer->timerid = pvNewID;
 }
 
 #endif /* DOXYGEN */

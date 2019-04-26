@@ -1,12 +1,15 @@
 # additional modules dependencies
 
+
+
+
 ifneq (,$(filter esp_eth,$(USEMODULE)))
     USEMODULE += esp_idf_eth
     USEMODULE += esp_idf_eth_phy
     USEMODULE += gnrc
     USEMODULE += netdev_eth
     USEMODULE += netopt
-    USEMODULE += freertos
+    USEMODULE += esp32_freertos
     INCLUDES += -I$(RIOTCPU)/$(CPU)/vendor/esp-idf/include/ethernet
     INCLUDES += -I$(ESP32_SDK_DIR)/components/ethernet/include
 endif
@@ -32,7 +35,7 @@ ifneq (,$(filter esp_wifi_any,$(USEMODULE)))
     USEMODULE += esp_idf_wpa_supplicant_crypto
     USEMODULE += esp_idf_wpa_supplicant_port
     USEMODULE += esp_idf_nvs_flash
-    USEMODULE += freertos
+    USEMODULE += esp32_freertos
 
     # crypto and hashes produce symbol conflicts with esp_idf_wpa_supplicant_crypto
     DISABLE_MODULE += crypto
@@ -108,4 +111,8 @@ else
     ifeq ($(FLASH_MODE), dout)
         CFLAGS += -DFLASH_MODE_DOUT=1
     endif
+endif
+
+ifneq (,$(filter esp32_freertos,$(USEMODULE)))
+    USEMODULE += freertos
 endif

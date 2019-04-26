@@ -14,9 +14,9 @@
  *
  * @file
  * @brief       freertos event groups
- * 
+ *
  * FreeRTOS to RIOT-OS adaption module for source code compatibility
- * not implemented
+ * Event groups are not implemented yet.
  *
  * @author      Gunar Schorcht
  * @author      Julian Holzwarth <julian.holzwarth@fu-berlin.de>
@@ -34,7 +34,7 @@
 extern "C" {
 #endif
 
-typedef void * EventGroupHandle_t;
+typedef void *EventGroupHandle_t;
 typedef TickType_t EventBits_t;
 
 /**
@@ -42,44 +42,44 @@ typedef TickType_t EventBits_t;
  *
  * @return NULL
  */
-EventGroupHandle_t xEventGroupCreate (void);
+EventGroupHandle_t xEventGroupCreate(void);
 
 /**
  * @brief   not implemented
  */
-void vEventGroupDelete (EventGroupHandle_t xEventGroup);
-
-/**
- * @brief   not implemented
- *
- * @return NULL
- */
-EventBits_t xEventGroupSetBits (EventGroupHandle_t xEventGroup,
-                                const EventBits_t uxBitsToSet);
+void vEventGroupDelete(EventGroupHandle_t xEventGroup);
 
 /**
  * @brief   not implemented
  *
  * @return NULL
  */
-EventBits_t xEventGroupClearBits (EventGroupHandle_t xEventGroup,
-                                  const EventBits_t uxBitsToClear );
+EventBits_t xEventGroupSetBits(EventGroupHandle_t xEventGroup,
+                               const EventBits_t uxBitsToSet);
 
 /**
  * @brief   not implemented
  *
  * @return NULL
  */
-EventBits_t xEventGroupWaitBits (const EventGroupHandle_t xEventGroup,
-                                 const EventBits_t uxBitsToWaitFor,
-                                 const BaseType_t xClearOnExit,
-                                 const BaseType_t xWaitForAllBits,
-                                 TickType_t xTicksToWait);
+EventBits_t xEventGroupClearBits(EventGroupHandle_t xEventGroup,
+                                 const EventBits_t uxBitsToClear );
+
+/**
+ * @brief   not implemented
+ *
+ * @return NULL
+ */
+EventBits_t xEventGroupWaitBits(const EventGroupHandle_t xEventGroup,
+                                const EventBits_t uxBitsToWaitFor,
+                                const BaseType_t xClearOnExit,
+                                const BaseType_t xWaitForAllBits,
+                                TickType_t xTicksToWait);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* DOXYGEN */
+#endif  /* DOXYGEN */
 
-#endif /* FREERTOS_EVENT_GROUPS_H */
+#endif  /* FREERTOS_EVENT_GROUPS_H */

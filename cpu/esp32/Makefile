@@ -4,6 +4,7 @@ MODULE = cpu
 # Add a list of subdirectories, that should also be built:
 DIRS += $(RIOTCPU)/esp_common
 DIRS += periph
+DIRS += freertos
 DIRS += vendor
 
 ifneq (, $(filter esp_can, $(USEMODULE)))

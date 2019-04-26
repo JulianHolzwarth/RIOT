@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2019 Freie Universitaet Berlin,
  *
@@ -5,6 +6,9 @@
  * General Public License v2.1. See the file LICENSE in the top level
  * directory for more details.
  */
+
+#define ENABLE_DEBUG (0)
+#include "debug.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,18 +20,26 @@
 #include "freertos/task.h"
 #include "freertos/FreeRTOS.h"
 
+
 #include "include/timer_test.h"
 
 /* to test the task */
-static mutex_t test_mutex;
+static SemaphoreHandle_t test_handle;
 
-
+/* TODO */
 static void vTimerCallback(TimerHandle_t xTimer)
 {
-    (void)xTimer;
-    mutex_trylock(&test_mutex);
-    //puts("time !");
-
+    DEBUG("timer callback: count of semaphore before take %d\n", uxSemaphoreGetCount(
+              test_handle));
+    xSemaphoreTake(test_handle, 0);
+    int32_t data = (int32_t)pvTimerGetTimerID(xTimer);
+    if (data == 1) {
+        puts("yeah\n");
+    }
+    else {
+        data++;
+        vTimerSetTimerID(xTimer, (void *)data);
+    }
 }
 
 
@@ -40,35 +52,38 @@ int timer_test_start(void)
 {
     bool test_result = pdPASS;
 
-    mutex_init(&test_mutex);
+    test_handle =  xQueueCreateCountingSemaphore(3, 3);
 
     TimerHandle_t testing_timer;
-    testing_timer = xTimerCreate("test_timer", 10, pdTRUE, ( void * )0, vTimerCallback);
+    testing_timer = xTimerCreate("test_timer", 10, pdTRUE, ( void * )0,
+                                 vTimerCallback);
     if (testing_timer == NULL) {
         puts("timer creation error");
+        vSemaphoreDelete(test_handle);
         return pdFAIL;
     }
     if (xTimerStart(testing_timer, 0) == pdFAIL) {
         puts("timer did not start");
-        test_result = pdFAIL;
         xTimerDelete(testing_timer, 0);
-        return test_result;
+        vSemaphoreDelete(test_handle);
+        return pdFAIL;
     }
-    vTaskDelay(100);
-    if (mutex_trylock(&test_mutex) == pdTRUE) {
+    vTaskDelay(50);
+
+    if (uxSemaphoreGetCount(test_handle) != 0) {
+        printf("count %d\n", uxSemaphoreGetCount(test_handle));
+        puts("timer callback function did not run");
         test_result = pdFAIL;
     }
-
     if (xTimerStop(testing_timer, 0) == pdFAIL) {
         puts("timer did not stop");
         test_result = pdFAIL;
     }
-
     if (xTimerDelete(testing_timer, 0) == pdFAIL) {
         puts("timer delete error");
         test_result = pdFAIL;
     }
-
+    vSemaphoreDelete(test_handle);
     if (test_result == pdFAIL) {
         return pdFAIL;
     }

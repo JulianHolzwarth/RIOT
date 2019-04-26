@@ -1,5 +1,6 @@
 include ../Makefile.tests_common
 
+
 USEMODULE += freertos
 USEMODULE += shell
 

@@ -30,13 +30,13 @@
  * objects.
  */
 typedef struct {
-    uint8_t     type;    /* type of the mutex, MUST be the first element */
-    mutex_t     mutex;   /* the mutex */
+    uint8_t type;           /* type of the mutex, MUST be the first element */
+    mutex_t mutex;          /* the mutex */
 } _mutex_t;
 
 typedef struct {
-    uint8_t     type;    /* type of the mutex, MUST be the first element */
-    rmutex_t    rmutex;  /* the mutex */
+    uint8_t type;           /* type of the mutex, MUST be the first element */
+    rmutex_t rmutex;        /* the mutex */
 } _rmutex_t;
 
 SemaphoreHandle_t xSemaphoreCreateMutex(void)
@@ -85,7 +85,7 @@ BaseType_t xSemaphoreTake(SemaphoreHandle_t xSemaphore,
 {
     DEBUG("%s mutex=%p wait=%u\n", __func__, (void *)xSemaphore, xTicksToWait);
 
-    CHECK_PARAM_RET(xSemaphore != NULL, pdFALSE);
+    CHECK_PARAM_RET(xSemaphore != NULL, pdFAIL);
 
     uint8_t type = ((_mutex_t *)xSemaphore)->type;
     mutex_t *mutex = &((_mutex_t *)xSemaphore)->mutex;
@@ -99,7 +99,7 @@ BaseType_t xSemaphoreTake(SemaphoreHandle_t xSemaphore,
             else {
                 mutex_lock(mutex);
                 /* TODO timeout handling */
-                return pdTRUE;
+                return pdPASS;
             }
             break;
         }
@@ -107,7 +107,8 @@ BaseType_t xSemaphoreTake(SemaphoreHandle_t xSemaphore,
             return xSemaphoreTakeRecursive(xSemaphore, xTicksToWait);
 
         default:
-            return xQueueGenericReceive(xSemaphore, NULL, xTicksToWait, pdFALSE);
+            return xQueueGenericReceive(xSemaphore, NULL, xTicksToWait,
+                                        pdFALSE);
     }
 }
 
@@ -191,7 +192,8 @@ BaseType_t xSemaphoreTakeRecursive(SemaphoreHandle_t xSemaphore,
 void vPortCPUAcquireMutex(portMUX_TYPE *mux)
 {
     DEBUG("%s pid=%d prio=%d mux=%p\n", __func__,
-          thread_getpid(), sched_threads[thread_getpid()]->priority, (void *)mux);
+          thread_getpid(), sched_threads[thread_getpid()]->priority,
+          (void *)mux);
     critical_enter();
     mutex_lock(mux); /* lock the mutex with interrupts disabled */
     critical_exit();
@@ -200,7 +202,8 @@ void vPortCPUAcquireMutex(portMUX_TYPE *mux)
 void vPortCPUReleaseMutex(portMUX_TYPE *mux)
 {
     DEBUG("%s pid=%d prio=%d mux=%p\n", __func__,
-          thread_getpid(), sched_threads[thread_getpid()]->priority, (void *)mux);
+          thread_getpid(), sched_threads[thread_getpid()]->priority,
+          (void *)mux);
     critical_enter();
     mutex_unlock(mux); /* unlock the mutex with interrupts disabled */
     critical_exit();

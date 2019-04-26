@@ -42,6 +42,14 @@ int task_test_start(void);
  */
 void task_test_thread(void *pvParameters);
 
+void task_test_thread_delay(void *pvParameters);
+
+int task_test_create(void);
+
+int task_test_create_static(void);
+
+int task_test_delay(void);
+
 #ifdef __cplusplus
 }
 #endif

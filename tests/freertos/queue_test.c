@@ -40,7 +40,8 @@ static void queue_test_thread1(void *pvParameters)
         while (uxQueueMessagesWaiting(testing_queue) == 0) {
             vTaskDelay(5);
         }
-        if (xQueueReceive(testing_queue, &message_receive, 0) == errQUEUE_EMPTY) {
+        if (xQueueReceive(testing_queue, &message_receive,
+                          0) == errQUEUE_EMPTY) {
             puts("queue could not revceive");
             mutex_trylock(&test_mutex);
             break;
@@ -95,15 +96,15 @@ int queue_test_start(void)
     }
     TaskHandle_t xHandle1;
     TaskHandle_t xHandle2;
-    xTaskCreate( queue_test_thread1, "testing task 1", THREAD_STACKSIZE_DEFAULT, (void *)testing_queue, 1, &xHandle1 );
-    xTaskCreate( queue_test_thread2, "testing task 2", THREAD_STACKSIZE_DEFAULT, (void *)testing_queue, 1, &xHandle2 );
+    xTaskCreate( queue_test_thread1, "testing task 1", THREAD_STACKSIZE_DEFAULT,
+                 (void *)testing_queue, 1, &xHandle1 );
+    xTaskCreate( queue_test_thread2, "testing task 2", THREAD_STACKSIZE_DEFAULT,
+                 (void *)testing_queue, 1, &xHandle2 );
 
-    while ((&thread1_done_mutex)->queue.next == NULL || (&thread2_done_mutex)->queue.next == NULL) {
+    while ((&thread1_done_mutex)->queue.next == NULL ||
+           (&thread2_done_mutex)->queue.next == NULL) {
         vTaskDelay(10);
     }
-
-    vTaskDelete(xHandle1);
-    vTaskDelete(xHandle2);
     vQueueDelete(testing_queue);
     if ((&test_mutex)->queue.next != NULL) {
         puts("error in threads");

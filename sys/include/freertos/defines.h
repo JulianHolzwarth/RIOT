@@ -14,11 +14,11 @@
  *
  * @file
  * @brief       general defines for freertos
- * 
+ *
  * FreeRTOS to RIOT-OS adaption module for source code compatibility
  * copied from cpu/esp32/include/esp_common.h and
  * copied from cpu/esp32/include/irq_arch.h
- * 
+ * needed for it to work
  *
  * @author      Gunar Schorcht
  * @author      Julian Holzwarth <julian.holzwarth@fu-berlin.de>
@@ -39,7 +39,7 @@ extern "C" {
 
 /**
  * @brief   microseconds per millisecond
- * 
+ *
  */
 #ifndef USEC_PER_MSEC
 #define USEC_PER_MSEC 1000UL
@@ -47,7 +47,7 @@ extern "C" {
 
 /**
  * @brief   millisecond per second
- * 
+ *
  */
 #ifndef MSEC_PER_SEC
 #define MSEC_PER_SEC  1000UL
@@ -55,9 +55,9 @@ extern "C" {
 
 /**
  * @brief   the primary cpu
- * 
+ *
  * the freertos implementation only supports this cpu
- * 
+ *
  */
 #ifndef PRO_CPU_NUM
 #define PRO_CPU_NUM (0)
@@ -66,21 +66,21 @@ extern "C" {
 
 #if ENABLE_DEBUG
 /**
-  * @brief  Parameter check with return a value.
-  *
-  * If ENABLE_DEBUG is true, the macro checks a condition and returns with a value
-  * if the condition is not fulfilled.
-  * @param  cond    the condition
-  * @param  err     the return value in the case the condition is not fulfilled.
-  */
+ * @brief  Parameter check with return a value.
+ *
+ * If ENABLE_DEBUG is true, the macro checks a condition and returns with a value
+ * if the condition is not fulfilled.
+ * @param  cond    the condition
+ * @param  err     the return value in the case the condition is not fulfilled.
+ */
 
 #ifndef CHECK_PARAM_RET
-#define CHECK_PARAM_RET(cond,err)   if (!(cond)) \
-                                    { \
-                                        DEBUG("%s parameter condition (" #cond ") " \
-                                              "not fulfilled\n", __func__); \
-                                        return err; \
-                                    }
+#define CHECK_PARAM_RET(cond, err)   if (!(cond)) \
+    { \
+        DEBUG("%s parameter condition (" #cond ") " \
+              "not fulfilled\n", __func__); \
+        return err; \
+    }
 #endif
 
 /**
@@ -92,20 +92,20 @@ extern "C" {
  */
 #ifndef CHECK_PARAM
 #define CHECK_PARAM(cond)   if (!(cond)) \
-                            { \
-                                DEBUG("%s parameter condition (" #cond ") " \
-                                      "not fulfilled\n", __func__); \
-                                return; \
-                            }
+    { \
+        DEBUG("%s parameter condition (" #cond ") " \
+              "not fulfilled\n", __func__); \
+        return; \
+    }
 #endif
 
 #else /* ENABLE_DEBUG */
 
 #ifndef CHECK_PARAM_RET
-#define CHECK_PARAM_RET(cond,err) if (!(cond)) return err;
+#define CHECK_PARAM_RET(cond, err) if (!(cond)) { return err; }
 #endif
 #ifndef CHECK_PARAM
-#define CHECK_PARAM(cond)         if (!(cond)) return;
+#define CHECK_PARAM(cond)         if (!(cond)) { return; }
 #endif
 
 #endif /* ENABLE_DEBUG */
@@ -119,7 +119,7 @@ extern "C" {
  * @{
  */
 
-#define critical_enter()   int _irq_state = irq_disable ()
+#define critical_enter()   int _irq_state = irq_disable()
 
 #define critical_exit()    irq_restore(_irq_state)
 
@@ -128,6 +128,6 @@ extern "C" {
 }
 #endif
 
-#endif /* DOXYGEN */
+#endif  /* DOXYGEN */
 
-#endif /* FREERTOS_DEFINES_H */
+#endif  /* FREERTOS_DEFINES_H */

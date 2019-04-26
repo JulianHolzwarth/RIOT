@@ -12,6 +12,8 @@
 #include "thread.h"
 #include "mutex.h"
 
+#include "xtimer.h"
+
 #include "freertos/task.h"
 #include "freertos/FreeRTOS.h"
 
@@ -19,6 +21,7 @@
 
 /* to test the task */
 static mutex_t test_mutex;
+static mutex_t finish_test_mutex;
 
 typedef struct {
     char word1;
@@ -37,58 +40,84 @@ int task_test_start(void)
     bool test_result = pdPASS;
 
     mutex_init(&test_mutex);
+    mutex_init(&finish_test_mutex);
 
-    paramStruct *xParameter = &global_xParameter;
-    xParameter->word1 = 'A';
-    xParameter->word2 = 'B';
-    TaskHandle_t xHandle;
-    xTaskCreate( task_test_thread, "testing task", THREAD_STACKSIZE_DEFAULT, (void *)xParameter, THREAD_PRIORITY_MAIN, &xHandle );
-    vTaskDelay(portTICK_RATE_MS(10));
-    uint32_t pid = (uint32_t )xHandle;
-    thread_t *thread = (thread_t *)sched_threads[pid];
-    if (thread->status != STATUS_STOPPED) {
-        puts("thread did not stop after it deleted itself");
+    if (!task_test_create()) {
         test_result = pdFAIL;
     }
 
-    mutex_unlock(&test_mutex);
-    vTaskDelay(100);
-    /* mutex no longer locked by other thread (because the thread is deleted) */
-    if (mutex_trylock(&test_mutex) == false) {
-        puts("task did lock after it got deleted");
-        printf("status: %u \n", thread->status );
+    if (!task_test_create_static()) {
         test_result = pdFAIL;
     }
-    mutex_unlock(&test_mutex);
-    free(xParameter);
-    vTaskDelay(100);
+
+    if (!task_test_delay()) {
+        test_result = pdFAIL;
+    }
+
     if (test_result == pdFAIL) {
         return pdFAIL;
     }
     return pdPASS;
 }
 
-task_test_create()
+int task_test_create(void)
 {
     paramStruct *xParameter = &global_xParameter;
+
     xParameter->word1 = 'A';
     xParameter->word2 = 'B';
+    mutex_unlock(&test_mutex);
     TaskHandle_t xHandle;
-    xTaskCreate( task_test_thread, "testing task", THREAD_STACKSIZE_DEFAULT, (void *)xParameter, THREAD_PRIORITY_MAIN, &xHandle );
+    xTaskCreate( task_test_thread, "testing task", THREAD_STACKSIZE_DEFAULT,
+                 xParameter, 14, &xHandle );
+    xtimer_sleep(1);
+    if (mutex_trylock(&test_mutex) == false) {
+        puts("Task creation error");
+        return pdFAIL;
+    }
     return pdPASS;
 }
 
-task_test_delete()
+int task_test_create_static(void)
 {
-    TaskHandle_t xHandle;
-    xTaskCreate( task_test_thread, "testing task", THREAD_STACKSIZE_DEFAULT, NULL, THREAD_PRIORITY_MAIN, &xHandle );
+    paramStruct *xParameter = &global_xParameter;
 
+    xParameter->word1 = 'A';
+    xParameter->word2 = 'B';
+    mutex_unlock(&test_mutex);
+    StackType_t *stack = malloc(THREAD_STACKSIZE_DEFAULT);
+    TaskHandle_t xHandle;
+    xHandle = xTaskCreateStatic(task_test_thread, "freertos static test thread",
+                                THREAD_STACKSIZE_DEFAULT, xParameter, 14, stack,
+                                NULL);
+    (void)xHandle;
+    xtimer_sleep(1);
+
+    if (mutex_trylock(&test_mutex) == false) {
+        puts("Task creation error");
+        return pdFAIL;
+    }
     return pdPASS;
 }
 
-task_test_delay()
+int task_test_delay(void)
 {
 
+    mutex_unlock(&test_mutex);
+    mutex_unlock(&finish_test_mutex);
+    TaskHandle_t xHandle;
+    xTaskCreate( task_test_thread_delay, "testing task",
+                 THREAD_STACKSIZE_DEFAULT, NULL, 14, &xHandle );
+    if (mutex_trylock(&test_mutex) == false) {
+        puts("task locked and ran too early");
+        return pdFAIL;
+    }
+    mutex_unlock(&test_mutex);
+    vTaskDelay(100);
+    if (mutex_trylock(&test_mutex) == true) {
+        puts("did not lock");
+        return pdFAIL;
+    }
     return pdPASS;
 }
 
@@ -102,18 +131,22 @@ task_test_delay()
 void task_test_thread(void *pvParameters)
 {
     /* check if Parameters are correct */
+    if (pvParameters == NULL) {
+        puts("no Parameters");
+        mutex_trylock(&test_mutex);
+        vTaskDelete(NULL);
+    }
     paramStruct pxParameters = *( paramStruct * )pvParameters;
-
     if (pxParameters.word1 !=  'A'  || pxParameters.word2 != 'B') {
         mutex_trylock(&test_mutex);
         puts("wrong parameter");
-        return;
     }
+    vTaskDelete(NULL);
 }
 
-void task_delete_test(void *pvParameter)
+void task_test_thread_delay(void *pvParameters)
 {
-    (void)pvParameter;
+    (void)pvParameters;
+    mutex_trylock(&test_mutex);
     vTaskDelete(NULL);
-    thread_sleep();
 }
