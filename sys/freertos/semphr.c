@@ -96,10 +96,14 @@ BaseType_t xSemaphoreTake(SemaphoreHandle_t xSemaphore,
             if (xTicksToWait == 0) {
                 return (mutex_trylock(mutex) == 1) ? pdPASS : pdFAIL;
             }
-            else {
+            else if (xTicksToWait == portMAX_DELAY) {
                 mutex_lock(mutex);
-                /* TODO timeout handling */
                 return pdPASS;
+            }
+            else {
+                assert(0);
+                /* TODO timeout handling */
+                return pdFAIL;
             }
             break;
         }
@@ -181,8 +185,12 @@ BaseType_t xSemaphoreTakeRecursive(SemaphoreHandle_t xSemaphore,
     if (xTicksToWait == 0) {
         ret = (rmutex_trylock(rmutex) == 1) ? pdPASS : pdFAIL;
     }
-    else {
+    else if (xTicksToWait == portMAX_DELAY) {
         rmutex_lock(&((_rmutex_t *)xSemaphore)->rmutex);
+    }
+    else {
+        ret = pdFAIL;
+        assert(0);
         /* TODO timeout handling */
     }
 
@@ -195,7 +203,7 @@ void vPortCPUAcquireMutex(portMUX_TYPE *mux)
           thread_getpid(), sched_threads[thread_getpid()]->priority,
           (void *)mux);
     critical_enter();
-    mutex_lock(mux); /* lock the mutex with interrupts disabled */
+    mutex_lock(mux);     /* lock the mutex with interrupts disabled */
     critical_exit();
 }
 
@@ -205,7 +213,7 @@ void vPortCPUReleaseMutex(portMUX_TYPE *mux)
           thread_getpid(), sched_threads[thread_getpid()]->priority,
           (void *)mux);
     critical_enter();
-    mutex_unlock(mux); /* unlock the mutex with interrupts disabled */
+    mutex_unlock(mux);     /* unlock the mutex with interrupts disabled */
     critical_exit();
 }
 
