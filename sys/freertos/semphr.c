@@ -101,6 +101,7 @@ BaseType_t xSemaphoreTake(SemaphoreHandle_t xSemaphore,
                 return pdPASS;
             }
             else {
+                DEBUG("%s not implemented with timeout of %u\n", __func__, xTicksToWait);
                 assert(0);
                 /* TODO timeout handling */
                 return pdFAIL;
@@ -190,6 +191,7 @@ BaseType_t xSemaphoreTakeRecursive(SemaphoreHandle_t xSemaphore,
     }
     else {
         ret = pdFAIL;
+        DEBUG("%s not implemented with timeout of %u\n", __func__, xTicksToWait);
         assert(0);
         /* TODO timeout handling */
     }
