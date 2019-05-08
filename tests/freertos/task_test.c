@@ -70,7 +70,7 @@ int task_test_create(void)
     TaskHandle_t xHandle;
     xTaskCreate( task_test_thread, "testing task", THREAD_STACKSIZE_DEFAULT,
                  xParameter, 14, &xHandle );
-    xtimer_sleep(1);
+    xtimer_usleep(10);
     if (mutex_trylock(&test_mutex) == false) {
         puts("Task creation error");
         return pdFAIL;
@@ -91,7 +91,7 @@ int task_test_create_static(void)
                                 THREAD_STACKSIZE_DEFAULT, xParameter, 14, stack,
                                 NULL);
     (void)xHandle;
-    xtimer_sleep(1);
+    xtimer_usleep(1);
 
     if (mutex_trylock(&test_mutex) == false) {
         puts("Task creation error");
@@ -113,7 +113,7 @@ int task_test_delay(void)
         return pdFAIL;
     }
     mutex_unlock(&test_mutex);
-    vTaskDelay(100);
+    vTaskDelay(10);
     if (mutex_trylock(&test_mutex) == true) {
         puts("did not lock");
         return pdFAIL;
