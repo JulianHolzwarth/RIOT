@@ -23,6 +23,7 @@
 #ifndef SEMAPHORE_TEST_FOR_COUNTER
 #define SEMAPHORE_TEST_FOR_COUNTER 100
 #endif
+/*TODO port_tick_max timeout*/
 
 /* to test the semaphore */
 static mutex_t test_mutex;
@@ -41,6 +42,13 @@ static mutex_t thread_done_mutex5;
 /* if locked at least one thread failed the test */
 static mutex_t thread_return_value_mutex;
 
+typedef struct {
+    SemaphoreHandle_t sema_handle;
+    int32_t timeout;
+}semaphore_test_parameter;
+
+
+
 /**
  * @brief   threadfunction for the freertos mutex semaphore test and the binary semaphore
  *
@@ -50,7 +58,8 @@ static mutex_t thread_return_value_mutex;
  */
 static void *semaphore_test_thread(void *parameter)
 {
-    SemaphoreHandle_t testing_semaphore = (SemaphoreHandle_t)parameter;
+    semaphore_test_parameter* parameter_struct = (semaphore_test_parameter*) parameter;
+    SemaphoreHandle_t testing_semaphore = parameter_struct->sema_handle;
     int ret = pdPASS;
 
     uint8_t loop_var;
@@ -58,7 +67,7 @@ static void *semaphore_test_thread(void *parameter)
     for (size_t i = 0; i < SEMAPHORE_TEST_FOR_COUNTER; i++) {
         loop_var = pdTRUE;
         while (loop_var) {
-            if (xSemaphoreTake(testing_semaphore, 0) == pdPASS) {
+            if (xSemaphoreTake(testing_semaphore, parameter_struct->timeout) == pdPASS) {
                 loop_var = pdFALSE;
             }
             thread_yield();
@@ -87,7 +96,7 @@ static void *semaphore_test_thread(void *parameter)
  *
  * @return pdPASS when the test is passed, pdFail otherwise
  */
-static int semaphore_test_helpfunction(SemaphoreHandle_t testing_semaphore)
+static int semaphore_test_helpfunction(SemaphoreHandle_t testing_semaphore, int32_t timeout)
 {
     uint8_t test_result = pdPASS;
 
@@ -104,13 +113,16 @@ static int semaphore_test_helpfunction(SemaphoreHandle_t testing_semaphore)
     void *thread_stack = malloc(THREAD_STACKSIZE_MAIN);
     kernel_pid_t thread_id;
 
+
+    semaphore_test_parameter thread_parameter;
+    thread_parameter.sema_handle = testing_semaphore;
+    thread_parameter.timeout = timeout;
     thread_id = thread_create(thread_stack, THREAD_STACKSIZE_MAIN,
                               THREAD_PRIORITY_MAIN, THREAD_CREATE_WOUT_YIELD,
-                              semaphore_test_thread, (void *)testing_semaphore,
+                              semaphore_test_thread, (void *)&thread_parameter,
                               "semaphore_helpfunction");
     if (!pid_is_valid(thread_id)) {
         free(thread_stack);
-        vSemaphoreDelete(testing_semaphore);
         puts("Error in thread creation: pid not valid");
         return pdFAIL;
     }
@@ -120,7 +132,7 @@ static int semaphore_test_helpfunction(SemaphoreHandle_t testing_semaphore)
     for (size_t i = 0; i < SEMAPHORE_TEST_FOR_COUNTER; i++) {
         loop_var = pdTRUE;
         while (loop_var) {
-            if (xSemaphoreTake(testing_semaphore, 0) == pdPASS) {
+            if (xSemaphoreTake(testing_semaphore, timeout) == pdPASS) {
                 loop_var = pdFALSE;
             }
             thread_yield();
@@ -149,7 +161,6 @@ static int semaphore_test_helpfunction(SemaphoreHandle_t testing_semaphore)
 
     /* evaluating test results and freeing memory */
     free(thread_stack);
-    vSemaphoreDelete(testing_semaphore);
     if (test_result == pdFAIL ||
         mutex_trylock(&thread_return_value_mutex) == pdFALSE) {
         return pdFAIL;
@@ -165,9 +176,17 @@ static int semaphore_test_helpfunction(SemaphoreHandle_t testing_semaphore)
  */
 int semaphore_test_mutex(void)
 {
+    bool test_result = pdPASS;
     SemaphoreHandle_t testing_semaphore = xSemaphoreCreateMutex();
+    if (semaphore_test_helpfunction(testing_semaphore, 0) == pdFAIL) {
+        test_result = pdFAIL;
+    }
+    if (semaphore_test_helpfunction(testing_semaphore, portMAX_DELAY) == pdFAIL) {
+        test_result = pdFAIL;
+    }
+    vSemaphoreDelete(testing_semaphore);
 
-    return semaphore_test_helpfunction(testing_semaphore);
+    return test_result;
 }
 
 /**
@@ -177,10 +196,18 @@ int semaphore_test_mutex(void)
  */
 int semaphore_test_binary(void)
 {
+    bool test_result = pdPASS;
     SemaphoreHandle_t testing_semaphore = xSemaphoreCreateBinary();
-
     xSemaphoreGive(testing_semaphore);
-    return semaphore_test_helpfunction(testing_semaphore);
+    if (semaphore_test_helpfunction(testing_semaphore, 0) == pdFAIL) {
+        test_result = pdFAIL;
+    }
+    if (semaphore_test_helpfunction(testing_semaphore, portMAX_DELAY) == pdFAIL) {
+        test_result = pdFAIL;
+    }
+    vSemaphoreDelete(testing_semaphore);
+
+    return test_result;
 }
 
 /**
