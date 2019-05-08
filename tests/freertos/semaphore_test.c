@@ -149,12 +149,11 @@ static int semaphore_test_helpfunction(SemaphoreHandle_t testing_semaphore)
 
     /* evaluating test results and freeing memory */
     free(thread_stack);
+    vSemaphoreDelete(testing_semaphore);
     if (test_result == pdFAIL ||
         mutex_trylock(&thread_return_value_mutex) == pdFALSE) {
-        vSemaphoreDelete(testing_semaphore);
         return pdFAIL;
     }
-    vSemaphoreDelete(testing_semaphore);
     return pdPASS;
 
 }
@@ -328,12 +327,11 @@ int semaphore_test_recursive_mutex(void)
 
     /* evaluating test results and freeing memory */
     free(thread_stack);
+    vSemaphoreDelete(testing_semaphore);
     if (test_result == pdFAIL ||
         mutex_trylock(&thread_return_value_mutex) == pdFALSE) {
-        vSemaphoreDelete(testing_semaphore);
         return pdFAIL;
     }
-    vSemaphoreDelete(testing_semaphore);
     return pdPASS;
 }
 
@@ -542,11 +540,10 @@ int semaphore_test_counting(void)
     free(thread3_stack);
     free(thread4_stack);
     free(thread5_stack);
+    vSemaphoreDelete(testing_semaphore);
     if (test_result == pdFAIL ||
         mutex_trylock(&thread_return_value_mutex) == pdFALSE) {
-        vSemaphoreDelete(testing_semaphore);
         return pdFAIL;
     }
-    vSemaphoreDelete(testing_semaphore);
     return pdPASS;
 }
