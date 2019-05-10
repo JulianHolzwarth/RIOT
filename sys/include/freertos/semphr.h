@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Gunar Schorcht
+ * Copyright (C) 2018 Gunar Schorcht,
  * Copyright (C) 2019 Freie Universitaet Berlin
  *
  * This file is subject to the terms and conditions of the GNU Lesser
