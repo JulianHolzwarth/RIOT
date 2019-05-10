@@ -78,7 +78,10 @@ BaseType_t xSemaphoreGive(SemaphoreHandle_t xSemaphore);
  * @brief   takes the semaphore
  *
  * @param   xSemaphore      the semaphore handle
- * @param   xTicksToWait    not correctly used (if != 0: wait until free)
+ * @param   xTicksToWait    not correctly used:
+ *                          if 0: try once
+ *                          if portMAX_DELAY: wait until free
+ *                          else: assert
  *
  * @return  pdPass  if  successful
  * @return  pdFail  else
@@ -103,7 +106,10 @@ BaseType_t xSemaphoreGiveRecursive(SemaphoreHandle_t xSemaphore);
  * @brief   takes the recursive semaphore
  *
  * @param   xSemaphore      the semaphore handle
- * @param   xTicksToWait    not correctly used (if != 0: wait until free)
+ * @param   xTicksToWait    not correctly used:
+ *                          if 0: try once
+ *                          if portMAX_DELAY: wait until free
+ *                          else: assert
  *
  * @return  pdPass  if  successful
  * @return  pdFail  else
