@@ -21,10 +21,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
 #include "shell.h"
 
 #include "freertos/FreeRTOS.h"
+#include "freertos/event_groups.h"
 
 #include "include/semaphore_test.h"
 #include "include/task_test.h"
@@ -41,6 +41,7 @@ static int cmd_test_counting(int argc, char **argv);
 static int cmd_test_task(int argc, char **argv);
 static int cmd_test_timer(int argc, char **argv);
 static int cmd_test_queue(int argc, char **argv);
+static int cmd_test_event_groups(int argc, char **argv);
 
 
 
@@ -55,6 +56,7 @@ static const shell_command_t shell_commands[] = {
     { "task", "tests freertos task",  cmd_test_task },
     { "timer", "tests freertos timer",  cmd_test_timer },
     { "queue", "tests freertos queue",  cmd_test_queue },
+    { "event_groups", "TODO",  cmd_test_event_groups },
     { NULL, NULL, NULL }
 };
 
@@ -216,6 +218,21 @@ static int cmd_test_queue(int argc, char **argv)
     }
 
     return 0;
+}
+
+static int cmd_test_event_groups(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+     puts("starting test: event_groups");
+     if (xEventGroupCreate()) {
+         puts("error in event groups");
+     }
+     else
+     {
+         puts("OK");
+     }
+    return 0;    
 }
 
 

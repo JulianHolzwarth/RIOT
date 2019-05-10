@@ -54,6 +54,11 @@ def testfunc(child):
     child.expect("OK")
     child.expect_exact("> ")
 
+    child.sendline("event_groups")
+    child.expect_exact("starting test: event_groups")
+    child.expect("OK")
+    child.expect_exact("> ")
+
 
 if __name__ == "__main__":
     sys.exit(run(testfunc))
