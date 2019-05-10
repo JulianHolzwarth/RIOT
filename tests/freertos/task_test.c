@@ -11,7 +11,6 @@
 #include <inttypes.h>
 #include "thread.h"
 #include "mutex.h"
-
 #include "xtimer.h"
 
 #include "freertos/task.h"
