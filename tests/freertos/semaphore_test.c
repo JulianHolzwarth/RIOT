@@ -41,7 +41,7 @@ char thread_stack_char_5[THREAD_STACKSIZE_MAIN];
  */
 typedef struct {
     SemaphoreHandle_t sema_handle;  /* the handle of a semaphore */
-    TickType_t timeout;                /* the timeout for the semaphore take call */
+    TickType_t timeout;             /* the timeout for the semaphore take call */
     bool return_val;                /* the return value from the semaphore */
 }semaphore_test_parameter;
 
@@ -61,11 +61,12 @@ static void *semaphore_test_thread(void *parameter)
         (semaphore_test_parameter *)parameter;
     SemaphoreHandle_t testing_semaphore = parameter_struct->sema_handle;
     TickType_t timeout = parameter_struct->timeout;
-    int ret = pdPASS;
-
+    int ret = pdPASS;   /* pdPass if test passed, pdFail else */
     uint8_t loop_var;
 
     for (size_t i = 0; i < SEMAPHORE_TEST_FOR_COUNTER; i++) {
+
+        /* in loop until it took the semaphore once */
         loop_var = pdTRUE;
         while (loop_var) {
             if (xSemaphoreTake(testing_semaphore, timeout) == pdPASS) {
@@ -74,6 +75,10 @@ static void *semaphore_test_thread(void *parameter)
             thread_yield();
         }
         thread_yield();
+
+        /* if mutex could not lock the test fails because semaphore gets only locked
+         * when the semaphore gets taken
+         */
         if (mutex_trylock(&test_mutex) == pdFALSE) {
             ret = pdFAIL;
             puts(
@@ -85,6 +90,7 @@ static void *semaphore_test_thread(void *parameter)
         xSemaphoreGive(testing_semaphore);
         thread_yield();
     }
+    /* returning test result via struct */
     parameter_struct->return_val = ret;
     sched_task_exit();
 }
@@ -130,6 +136,8 @@ static int semaphore_test_helpfunction(SemaphoreHandle_t testing_semaphore,
     /* semaphore test */
     uint8_t loop_var;
     for (size_t i = 0; i < SEMAPHORE_TEST_FOR_COUNTER; i++) {
+
+        /* in loop until it took the semaphore once */
         loop_var = pdTRUE;
         while (loop_var) {
             if (xSemaphoreTake(testing_semaphore, timeout) == pdPASS) {
@@ -138,6 +146,10 @@ static int semaphore_test_helpfunction(SemaphoreHandle_t testing_semaphore,
             thread_yield();
         }
         thread_yield();
+
+        /* if mutex could not lock the test fails because semaphore gets only locked
+         * when the semaphore gets taken
+         */
         if (mutex_trylock(&test_mutex) == pdFALSE) {
             test_result = pdFAIL;
             puts(
@@ -173,9 +185,11 @@ int semaphore_test_mutex(void)
     bool test_result = pdPASS;
     SemaphoreHandle_t testing_semaphore = xSemaphoreCreateMutex();
 
+    /* testing mutex semaphore with no timeout */
     if (semaphore_test_helpfunction(testing_semaphore, 0) == pdFAIL) {
         test_result = pdFAIL;
     }
+    /* testing mutex semaphore with max timeout */
     if (semaphore_test_helpfunction(testing_semaphore,
                                     portMAX_DELAY) == pdFAIL) {
         test_result = pdFAIL;
@@ -194,11 +208,14 @@ int semaphore_test_binary(void)
 {
     bool test_result = pdPASS;
     SemaphoreHandle_t testing_semaphore = xSemaphoreCreateBinary();
-
+    /* binary semaphore starts already taken */
     xSemaphoreGive(testing_semaphore);
+
+    /* testing mutex semaphore with no timeout */
     if (semaphore_test_helpfunction(testing_semaphore, 0) == pdFAIL) {
         test_result = pdFAIL;
     }
+    /* testing mutex semaphore with max timeout */
     if (semaphore_test_helpfunction(testing_semaphore,
                                     portMAX_DELAY) == pdFAIL) {
         test_result = pdFAIL;
@@ -229,6 +246,8 @@ static void *semaphore_test_recursive_mutex_thread(void *parameter)
     uint8_t loop_var;
 
     for (size_t i = 0; i < SEMAPHORE_TEST_FOR_COUNTER; i++) {
+
+        /* in loop until it took the semaphore once */
         loop_var = pdTRUE;
         while (loop_var) {
             if (xSemaphoreTake(testing_semaphore, timeout) == pdPASS) {
@@ -237,6 +256,9 @@ static void *semaphore_test_recursive_mutex_thread(void *parameter)
             thread_yield();
         }
         thread_yield();
+        /* if mutex could not lock the test fails because semaphore gets only locked
+         * when the semaphore gets taken
+         */
         if (rmutex_trylock(&recursive_test_mutex) == pdFALSE) {
             ret = pdFAIL;
             puts(
@@ -252,6 +274,9 @@ static void *semaphore_test_recursive_mutex_thread(void *parameter)
             break;
         }
         thread_yield();
+        /* if mutex could not lock the test fails because semaphore gets only locked
+         * when the semaphore gets taken
+         */
         if (rmutex_trylock(&recursive_test_mutex) == pdFALSE) {
             ret = pdFAIL;
             puts(
@@ -312,8 +337,12 @@ static int semaphore_test_recursive_mutex_helpfunc(TickType_t timeout)
         puts("Error in thread creation: pid not valid");
         return pdFAIL;
     }
+
+    /* semaphore test */
     uint8_t loop_var;
     for (size_t i = 0; i < SEMAPHORE_TEST_FOR_COUNTER; i++) {
+
+        /* in loop until it took the semaphore once */
         loop_var = pdTRUE;
         while (loop_var) {
             if (xSemaphoreTake(testing_semaphore, timeout) == pdPASS) {
@@ -322,6 +351,9 @@ static int semaphore_test_recursive_mutex_helpfunc(TickType_t timeout)
             thread_yield();
         }
         thread_yield();
+        /* if mutex could not lock the test fails because semaphore gets only locked
+         * when the semaphore gets taken
+         */
         if (rmutex_trylock(&recursive_test_mutex) == pdFALSE) {
             test_result = pdFAIL;
             puts(
@@ -337,6 +369,9 @@ static int semaphore_test_recursive_mutex_helpfunc(TickType_t timeout)
             break;
         }
         thread_yield();
+        /* if mutex could not lock the test fails because semaphore gets only locked
+         * when the semaphore gets taken
+         */
         if (rmutex_trylock(&recursive_test_mutex) == pdFALSE) {
             test_result = pdFAIL;
             puts(
@@ -375,9 +410,11 @@ int semaphore_test_recursive_mutex(void)
 {
     bool test_result = pdPASS;
 
+    /* testing mutex semaphore with no timeout */
     if (semaphore_test_recursive_mutex_helpfunc(0) == pdFAIL) {
         test_result = pdFAIL;
     }
+    /* testing mutex semaphore with max timeout */
     if (semaphore_test_recursive_mutex_helpfunc(portMAX_DELAY) == pdFAIL) {
         test_result = pdFAIL;
     }
@@ -421,9 +458,7 @@ static void *semaphore_test_counting_thread(void *parameter)
             mutex_unlock(&test_mutex);
             break;
         }
-        thread_yield();
         counting_test--;
-        thread_yield();
         mutex_unlock(&test_mutex);
         thread_yield();
 
@@ -460,7 +495,7 @@ static int semaphore_test_counting_helpfunc(TickType_t timeout)
     uint8_t test_result = pdPASS;
     SemaphoreHandle_t testing_semaphore = xSemaphoreCreateCounting(5, 2);
 
-    counting_test = 5; 
+    counting_test = 5;
     if (testing_semaphore == NULL) {
         puts("test failed: counting semaphore not created");
         return pdFAIL;
