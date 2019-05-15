@@ -495,7 +495,7 @@ static int semaphore_test_counting_helpfunc(TickType_t timeout)
     uint8_t test_result = pdPASS;
     SemaphoreHandle_t testing_semaphore = xSemaphoreCreateCounting(5, 2);
 
-    counting_test = 5;
+    counting_test = 2;
     if (testing_semaphore == NULL) {
         puts("test failed: counting semaphore not created");
         return pdFAIL;
