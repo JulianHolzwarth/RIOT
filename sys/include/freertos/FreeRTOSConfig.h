@@ -24,6 +24,9 @@
 #ifndef FREERTOS_FREERTOSCONFIG_H
 #define FREERTOS_FREERTOSCONFIG_H
 
+#define configUSE_PREEMPTION 1
+#define configUSE_TIME_SLICING 0
+
 #ifndef DOXYGEN
 /*
  * PLESE NOTE: Following definitions were copied directly from the FreeRTOS
@@ -57,6 +60,8 @@
 	/* Defaults to 1 for backward compatibility. */
 	#define configSUPPORT_DYNAMIC_ALLOCATION 1
 #endif /* configSUPPORT_DYNAMIC_ALLOCATION */
+
+
 
 #endif /* DOXYGEN */
 #endif /* FREERTOS_FREERTOSCONFIG_H */

@@ -24,7 +24,7 @@
 
 /* to test the semaphore */
 static mutex_t test_mutex;
-static int8_t counting_test;
+static int8_t counting_test;    /* the amound of free places in the counting semaphore */
 
 /* to test the recursive mutex semaphore */
 static rmutex_t recursive_test_mutex;
@@ -208,6 +208,7 @@ int semaphore_test_binary(void)
 {
     bool test_result = pdPASS;
     SemaphoreHandle_t testing_semaphore = xSemaphoreCreateBinary();
+
     /* binary semaphore starts already taken */
     xSemaphoreGive(testing_semaphore);
 
@@ -439,17 +440,24 @@ static void *semaphore_test_counting_thread(void *parameter)
     TickType_t timeout = parameter_struct->timeout;
     int ret = pdPASS;
 
+    /* semaphore test */
     uint8_t loop_var;
-
     for (size_t i = 0; i < SEMAPHORE_TEST_FOR_COUNTER; i++) {
         loop_var = pdTRUE;
         while (loop_var) {
+
+            /* in loop until it took the semaphore once */
             if (xSemaphoreTake(testing_semaphore, timeout) == pdPASS) {
                 loop_var = pdFALSE;
             }
             thread_yield();
         }
         thread_yield();
+
+        /*
+         * if counting_test is 0 or lower it means that the semaphore was taken more than possible
+         * the mutex is because counting_test could otherwise be changed by 2 threads at the same time
+         */
         mutex_lock(&test_mutex);
         if (counting_test <= 0) {
             ret = pdFAIL;
@@ -460,19 +468,23 @@ static void *semaphore_test_counting_thread(void *parameter)
         }
         counting_test--;
         mutex_unlock(&test_mutex);
-        thread_yield();
 
+        thread_yield();
+        
+
+        /*
+         * if counting_test is 4 or higher it means that the semaphore was given more than possible
+         */
         mutex_lock(&test_mutex);
-        if (counting_test >= 5) {
+        if (counting_test >= 4) {
             ret = pdFAIL;
             puts("test failed: too many places");
             mutex_unlock(&test_mutex);
             break;
         }
-        thread_yield();
         counting_test++;
-        thread_yield();
         mutex_unlock(&test_mutex);
+
         xSemaphoreGive(testing_semaphore);
         thread_yield();
     }
@@ -493,9 +505,9 @@ static void *semaphore_test_counting_thread(void *parameter)
 static int semaphore_test_counting_helpfunc(TickType_t timeout)
 {
     uint8_t test_result = pdPASS;
-    SemaphoreHandle_t testing_semaphore = xSemaphoreCreateCounting(5, 2);
+    SemaphoreHandle_t testing_semaphore = xSemaphoreCreateCounting(5, 4);
 
-    counting_test = 2;
+    counting_test = 4;
     if (testing_semaphore == NULL) {
         puts("test failed: counting semaphore not created");
         return pdFAIL;
@@ -559,12 +571,19 @@ static int semaphore_test_counting_helpfunc(TickType_t timeout)
     for (size_t i = 0; i < SEMAPHORE_TEST_FOR_COUNTER; i++) {
         loop_var = pdTRUE;
         while (loop_var) {
+
+            /* in loop until it took the semaphore once */
             if (xSemaphoreTake(testing_semaphore, timeout) == pdPASS) {
                 loop_var = pdFALSE;
             }
             thread_yield();
         }
         thread_yield();
+
+        /*
+         * if counting_test is 0 or lower it means that the semaphore was taken more than possible
+         * the mutex is because counting_test could otherwise be changed by 2 threads at the same time
+         */
         mutex_lock(&test_mutex);
         if (counting_test <= 0) {
             test_result = pdFAIL;
@@ -573,22 +592,22 @@ static int semaphore_test_counting_helpfunc(TickType_t timeout)
             mutex_unlock(&test_mutex);
             break;
         }
-        thread_yield();
         counting_test--;
-        thread_yield();
         mutex_unlock(&test_mutex);
+
         thread_yield();
 
+        /*
+         * if counting_test is 4 or higher it means that the semaphore was given more than possible
+         */
         mutex_lock(&test_mutex);
-        if (counting_test >= 5) {
+        if (counting_test >= 4) {
             test_result = pdFAIL;
             puts("test failed: too many places");
             mutex_unlock(&test_mutex);
             break;
         }
-        thread_yield();
         counting_test++;
-        thread_yield();
         mutex_unlock(&test_mutex);
 
         xSemaphoreGive(testing_semaphore);
@@ -621,9 +640,11 @@ int semaphore_test_counting(void)
 {
     bool test_result = pdPASS;
 
+    /* testing mutex semaphore with no timeout */
     if (semaphore_test_counting_helpfunc(0) == pdFAIL) {
         test_result = pdFAIL;
     }
+    /* testing mutex semaphore with max timeout */
     if (semaphore_test_counting_helpfunc(portMAX_DELAY) == pdFAIL) {
         test_result = pdFAIL;
     }

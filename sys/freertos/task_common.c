@@ -18,7 +18,6 @@
 #include "log.h"
 #include "thread.h"
 #include "xtimer.h"
- #include "periph/timer.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task_common.h"
@@ -27,6 +26,7 @@
 /**
  * @brief   Architecture specific data of thread control blocks
  */
+/**/
 typedef struct {
     uint32_t saved_int_state;
     uint32_t critical_nesting;
@@ -43,8 +43,13 @@ BaseType_t xTaskCreate(TaskFunction_t pvTaskCode,
                        TaskHandle_t *const pxCreatedTask)
 {
     /* FreeRTOS priority values have to be inverted */
-    uxPriority = SCHED_PRIO_LEVELS - uxPriority - 1;
-
+    if (uxPriority >= configMAX_PRIORITIES) {
+        uxPriority = 0;
+    }
+    else {
+        uxPriority = THREAD_PRIORITY_MIN - uxPriority;
+    }
+    
     DEBUG("%s name=%s size=%d prio=%d pxCreatedTask=%p ",
           __func__, pcName, usStackDepth, uxPriority, (void *)pxCreatedTask);
 
@@ -56,8 +61,7 @@ BaseType_t xTaskCreate(TaskFunction_t pvTaskCode,
     kernel_pid_t pid = thread_create(stack,
                                      usStackDepth + sizeof(thread_t),
                                      uxPriority,
-                                     THREAD_CREATE_WOUT_YIELD |
-                                     THREAD_CREATE_STACKTEST,
+                                     THREAD_CREATE_WOUT_YIELD,
                                      (thread_task_func_t)pvTaskCode,
                                      pvParameters, pcName);
     DEBUG("pid=%d\n", pid);
@@ -81,7 +85,12 @@ TaskHandle_t xTaskCreateStatic(TaskFunction_t pvTaskCode,
     (void)pxTaskBuffer;
 
     /* FreeRTOS priority values have to be inverted */
-    uxPriority = SCHED_PRIO_LEVELS - uxPriority - 1;
+    if (uxPriority >= configMAX_PRIORITIES) {
+        uxPriority = 0;
+    }
+    else {
+        uxPriority = THREAD_PRIORITY_MIN - uxPriority;
+    }
 
     DEBUG("%s name=%s size=%d prio=%d",
           __func__, pcName, ulStackDepth, uxPriority);
@@ -93,8 +102,7 @@ TaskHandle_t xTaskCreateStatic(TaskFunction_t pvTaskCode,
     kernel_pid_t pid = thread_create((char *)puxStackBuffer,
                                      ulStackDepth,
                                      uxPriority,
-                                     THREAD_CREATE_WOUT_YIELD |
-                                     THREAD_CREATE_STACKTEST,
+                                     THREAD_CREATE_WOUT_YIELD,
                                      (thread_task_func_t)pvTaskCode,
                                      pvParameters, pcName);
     DEBUG("pid=%d\n", pid);
