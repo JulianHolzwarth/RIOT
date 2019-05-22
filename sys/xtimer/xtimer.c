@@ -45,7 +45,14 @@
 typedef struct {
     mutex_t *mutex;
     thread_t *thread;
-    volatile int timeout;
+    /*
+     * @brief: non zero means the thread was removed from the mutex thread waiting list
+     */
+    volatile int got_unlocked;
+    /*
+     * @brief:  mutex should block because timeout did not shoot
+     */
+    volatile int blocking;
 } mutex_thread_t;
 
 static void _callback_unlock_mutex(void* arg)
@@ -243,9 +250,9 @@ static void _mutex_timeout(void *arg)
 
     mutex_thread_t *mt = (mutex_thread_t *)arg;
 
+    mt->blocking = 0;
     if (mt->mutex->queue.next != MUTEX_LOCKED &&
         mt->mutex->queue.next != NULL) {
-        mt->timeout = 1;
         list_node_t *node = list_remove(&mt->mutex->queue,
                                         (list_node_t *)&mt->thread->rq_entry);
 
@@ -254,6 +261,7 @@ static void _mutex_timeout(void *arg)
             if (mt->mutex->queue.next == NULL) {
                 mt->mutex->queue.next = MUTEX_LOCKED;
             }
+            mt->got_unlocked = 1;
             sched_set_status(mt->thread, STATUS_PENDING);
             irq_restore(irqstate);
             sched_switch(mt->thread->priority);
@@ -266,17 +274,19 @@ static void _mutex_timeout(void *arg)
 int xtimer_mutex_lock_timeout(mutex_t *mutex, uint64_t timeout)
 {
     xtimer_t t;
-    mutex_thread_t mt = { mutex, (thread_t *)sched_active_thread, 0 };
+    mutex_thread_t mt = { mutex, (thread_t *)sched_active_thread, .got_unlocked=0, .blocking=1 };
 
     if (timeout != 0) {
         t.callback = _mutex_timeout;
         t.arg = (void *)((mutex_thread_t *)&mt);
         xtimer_set64(&t, timeout);
     }
-
-    mutex_lock(mutex);
+    int ret = _mutex_lock(mutex, mt.blocking);
+    if (ret == 0) {
+        return -1;
+    }
     xtimer_remove(&t);
-    return -mt.timeout;
+    return -mt.got_unlocked;
 }
 
 #ifdef MODULE_CORE_THREAD_FLAGS
