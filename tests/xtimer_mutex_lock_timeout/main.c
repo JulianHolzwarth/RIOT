@@ -26,6 +26,9 @@
 /* timeout at one millisecond (1000 us) to make sure it does not spin. */
 #define LONG_MUTEX_TIMEOUT 1000
 
+/* timeout smaller than XTIMER_BACKOFF to make sure it spins. */
+#define SHORT_MUTEX_TIMEOUT ((1 << XTIMER_SHIFT) + 1)
+
 /**
  * Foward declarations
  */
@@ -33,6 +36,9 @@ static int cmd_test_xtimer_mutex_lock_timeout_long_unlocked(int argc,
                                                             char **argv);
 static int cmd_test_xtimer_mutex_lock_timeout_long_locked(int argc,
                                                           char **argv);
+static int cmd_test_xtimer_mutex_lock_timeout_short_locked(int argc,
+                                                           char **argv);
+
 
 /**
  * @brief   List of command for this application.
@@ -42,6 +48,8 @@ static const shell_command_t shell_commands[] = {
       cmd_test_xtimer_mutex_lock_timeout_long_unlocked, },
     { "mutex_timeout_long_locked", "locked mutex with long timeout",
       cmd_test_xtimer_mutex_lock_timeout_long_locked, },
+    { "mutex_timeout_short_locked", "locked mutex with short timeout",
+      cmd_test_xtimer_mutex_lock_timeout_short_locked, },
     { NULL, NULL, NULL }
 };
 
@@ -117,6 +125,44 @@ static int cmd_test_xtimer_mutex_lock_timeout_long_locked(int argc,
 
     return 0;
 }
+
+/**
+ * @brief   shell command to test xtimer_mutex_lock_timeout when spinning
+ *
+ * The mutex is locked before the function call and
+ * the timer long. Meaning the timer will trigger before
+ * xtimer_mutex_lock_timeout tries to acquire the mutex.
+ *
+ * @param[in] argc  Number of arguments
+ * @param[in] argv  Array of arguments
+ *
+ * @return 0 on success
+ */
+static int cmd_test_xtimer_mutex_lock_timeout_short_locked(int argc,
+                                                           char **argv)
+{
+    (void)argc;
+    (void)argv;
+    puts("starting test: xtimer mutex lock timeout with short timeout and locked mutex");
+    mutex_t test_mutex = MUTEX_INIT;
+    mutex_lock(&test_mutex);
+
+    if (xtimer_mutex_lock_timeout(&test_mutex, SHORT_MUTEX_TIMEOUT) == 0) {
+        puts("Error: mutex taken");
+    }
+    else {
+        /* mutex has to be locked */
+        if (mutex_trylock(&test_mutex) == 0) {
+            puts("OK");
+        }
+        else {
+            puts("error mutex not locked");
+        }
+    }
+
+    return 0;
+}
+
 
 /**
  * @brief   main function starting shell
