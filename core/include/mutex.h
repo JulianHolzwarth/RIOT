@@ -87,7 +87,7 @@ static inline void mutex_init(mutex_t *mutex)
  * @return 1 if mutex was unlocked, now it is locked.
  * @return 0 if the mutex was locked.
  */
-int _mutex_lock(mutex_t *mutex, int blocking);
+int _mutex_lock(mutex_t *mutex, volatile int *blocking);
 
 /**
  * @brief Tries to get a mutex, non-blocking.
@@ -100,7 +100,8 @@ int _mutex_lock(mutex_t *mutex, int blocking);
  */
 static inline int mutex_trylock(mutex_t *mutex)
 {
-    return _mutex_lock(mutex, 0);
+    int blocking = 0;
+    return _mutex_lock(mutex, &blocking);
 }
 
 /**
@@ -110,7 +111,8 @@ static inline int mutex_trylock(mutex_t *mutex)
  */
 static inline void mutex_lock(mutex_t *mutex)
 {
-    _mutex_lock(mutex, 1);
+    int blocking = 1;
+    _mutex_lock(mutex, &blocking);
 }
 
 /**
