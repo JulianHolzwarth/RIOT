@@ -36,6 +36,8 @@ static int cmd_test_xtimer_mutex_lock_timeout_long_unlocked(int argc,
                                                             char **argv);
 static int cmd_test_xtimer_mutex_lock_timeout_long_locked(int argc,
                                                           char **argv);
+static int cmd_test_xtimer_mutex_lock_timeout_short_unlocked(int argc,
+                                                             char **argv);
 static int cmd_test_xtimer_mutex_lock_timeout_short_locked(int argc,
                                                            char **argv);
 
@@ -48,6 +50,8 @@ static const shell_command_t shell_commands[] = {
       cmd_test_xtimer_mutex_lock_timeout_long_unlocked, },
     { "mutex_timeout_long_locked", "locked mutex with long timeout",
       cmd_test_xtimer_mutex_lock_timeout_long_locked, },
+    { "mutex_timeout_short_unlocked", "unlocked mutex with short timeout",
+      cmd_test_xtimer_mutex_lock_timeout_short_unlocked, },
     { "mutex_timeout_short_locked", "locked mutex with short timeout",
       cmd_test_xtimer_mutex_lock_timeout_short_locked, },
     { NULL, NULL, NULL }
@@ -143,7 +147,8 @@ static int cmd_test_xtimer_mutex_lock_timeout_short_locked(int argc,
 {
     (void)argc;
     (void)argv;
-    puts("starting test: xtimer mutex lock timeout with short timeout and locked mutex");
+    puts(
+        "starting test: xtimer mutex lock timeout with short timeout and locked mutex");
     mutex_t test_mutex = MUTEX_INIT;
     mutex_lock(&test_mutex);
 
@@ -158,6 +163,43 @@ static int cmd_test_xtimer_mutex_lock_timeout_short_locked(int argc,
         else {
             puts("error mutex not locked");
         }
+    }
+
+    return 0;
+}
+
+/**
+ * @brief   shell command to test xtimer_mutex_lock_timeout when spinning
+ *
+ * the mutex is not locked before the function is called and
+ * the timer is short. Meaning the timer will trigger before
+ * xtimer_mutex_lock_timeout tries to acquire the mutex.
+ *
+ * @param[in] argc  Number of arguments
+ * @param[in] argv  Array of arguments
+ *
+ * @return 0 on success
+ */
+static int cmd_test_xtimer_mutex_lock_timeout_short_unlocked(int argc,
+                                                             char **argv)
+{
+    (void)argc;
+    (void)argv;
+    puts(
+        "starting test: xtimer mutex lock timeout with short timeout and unlocked mutex");
+    mutex_t test_mutex = MUTEX_INIT;
+
+    if (xtimer_mutex_lock_timeout(&test_mutex, SHORT_MUTEX_TIMEOUT) == 0) {
+        /* mutex has to be locked */
+        if (mutex_trylock(&test_mutex) == 0) {
+            puts("OK");
+        }
+        else {
+            puts("error mutex not locked");
+        }
+    }
+    else {
+        puts("Error: mutex timed out");
     }
 
     return 0;
