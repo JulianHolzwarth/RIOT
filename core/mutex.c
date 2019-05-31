@@ -29,14 +29,11 @@
 #include "irq.h"
 #include "list.h"
 
-#include "xtimer.h"
-
 #define ENABLE_DEBUG    (0)
 #include "debug.h"
 
 int _mutex_lock(mutex_t *mutex, volatile int *blocking)
 {
-    xtimer_spin(xtimer_ticks_from_usec(XTIMER_BACKOFF * 4));    /* longer than timeout of xtimer_mutex_lock_timeout in test */
     unsigned irqstate = irq_disable();
 
     DEBUG("PID[%" PRIkernel_pid "]: Mutex in use.\n", sched_active_pid);
