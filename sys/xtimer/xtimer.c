@@ -244,30 +244,34 @@ int _xtimer_msg_receive_timeout(msg_t *msg, uint32_t timeout_ticks)
     return _msg_wait(msg, &tmsg, &t);
 }
 
+static int _mutex_remove_thread_from_waiting_queue(mutex_t *mutex, thread_t *thread)
+{
+    unsigned irqstate = irq_disable();
+    assert(mutex != NULL && thread != NULL);
+
+    if (mutex->queue.next != MUTEX_LOCKED && mutex->queue.next != NULL) {
+        list_node_t *node = list_remove(&mutex->queue, (list_node_t *)&thread->rq_entry);
+        /* if thread was removed from the list */
+        if (node != NULL) {
+            if (mutex->queue.next == NULL) {
+                mutex->queue.next = MUTEX_LOCKED;
+            }
+            sched_set_status(thread, STATUS_PENDING);
+            irq_restore(irqstate);
+            sched_switch(thread->priority);
+            return 1;
+        }
+    }
+    irq_restore(irqstate);
+    return 0;
+}
+
 static void _mutex_timeout(void *arg)
 {
     unsigned irqstate = irq_disable();
-
     mutex_thread_t *mt = (mutex_thread_t *)arg;
-
     mt->blocking = 0;
-    if (mt->mutex->queue.next != MUTEX_LOCKED &&
-        mt->mutex->queue.next != NULL) {
-        list_node_t *node = list_remove(&mt->mutex->queue,
-                                        (list_node_t *)&mt->thread->rq_entry);
-
-        /* if thread was removed from the list */
-        if (node != NULL) {
-            if (mt->mutex->queue.next == NULL) {
-                mt->mutex->queue.next = MUTEX_LOCKED;
-            }
-            mt->got_unlocked = 1;
-            sched_set_status(mt->thread, STATUS_PENDING);
-            irq_restore(irqstate);
-            sched_switch(mt->thread->priority);
-            return;
-        }
-    }
+    mt->got_unlocked = _mutex_remove_thread_from_waiting_queue(mt->mutex, mt->thread);
     irq_restore(irqstate);
 }
 
