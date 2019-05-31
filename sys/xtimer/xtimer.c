@@ -243,7 +243,8 @@ static void _mutex_timeout(void *arg)
 
     mutex_thread_t *mt = (mutex_thread_t *)arg;
 
-    if (mt->mutex->queue.next != MUTEX_LOCKED) {
+    if (mt->mutex->queue.next != MUTEX_LOCKED &&
+        mt->mutex->queue.next != NULL) {
         mt->timeout = 1;
         list_node_t *node = list_remove(&mt->mutex->queue,
                                         (list_node_t *)&mt->thread->rq_entry);
@@ -259,7 +260,6 @@ static void _mutex_timeout(void *arg)
             return;
         }
     }
-
     irq_restore(irqstate);
 }
 
