@@ -255,11 +255,13 @@ static void _mutex_remove_thread_from_waiting_queue(mutex_t *mutex, thread_t *th
 {
     unsigned irqstate = irq_disable();
     assert(mutex != NULL && thread != NULL);
+    DEBUG("_mutex_remove_thread_from_waiting_queue(): param thread: %"PRIkernel_pid"\n", thread->pid);
 
     if (mutex->queue.next != MUTEX_LOCKED && mutex->queue.next != NULL) {
         list_node_t *node = list_remove(&mutex->queue, (list_node_t *)&thread->rq_entry);
         /* if thread was removed from the list */
         if (node != NULL) {
+            DEBUG("thread: %"PRIkernel_pid" removed from list\n", (container_of((clist_node_t *)node, thread_t, rq_entry)->pid));
             if (mutex->queue.next == NULL) {
                 mutex->queue.next = MUTEX_LOCKED;
             }
@@ -279,8 +281,15 @@ static void _mutex_timeout(void *arg)
 {
     unsigned irqstate = irq_disable();
     mutex_thread_t *mt = (mutex_thread_t *)arg;
+
+    DEBUG(
+        "_mutex_timeout call. Struct: blocking:%d got_unlocked %d, thread:%" PRIkernel_pid " \n", mt->blocking, mt->got_unlocked,
+        mt->thread->pid);
     mt->blocking = 0;
     _mutex_remove_thread_from_waiting_queue(mt->mutex, mt->thread, &mt->got_unlocked);
+    DEBUG(
+        "_mutex_timeout exit. Struct: blocking:%d got_unlocked %d, thread:%" PRIkernel_pid " \n", mt->blocking, mt->got_unlocked,
+        mt->thread->pid);
     irq_restore(irqstate);
 }
 
@@ -292,12 +301,16 @@ int xtimer_mutex_lock_timeout(mutex_t *mutex, uint64_t timeout)
     if (timeout != 0) {
         t.callback = _mutex_timeout;
         t.arg = (void *)((mutex_thread_t *)&mt);
+        DEBUG("Setting xtimer to %"PRIu32"\n", (uint32_t)timeout);
         xtimer_set64(&t, timeout);
     }
+    DEBUG("Locking mutex\n");
     int ret = _mutex_lock(mutex, &mt.blocking);
     if (ret == 0) {
+        DEBUG("xtimer_mutex_lock_timeout: did not get mutex non blocking\n");
         return -1;
     }
+    DEBUG("Removing xtimer\n");
     xtimer_remove(&t);
     return -mt.got_unlocked;
 }
