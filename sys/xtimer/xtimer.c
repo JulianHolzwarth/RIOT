@@ -280,7 +280,7 @@ static void _mutex_timeout(void *arg)
     unsigned irqstate = irq_disable();
     mutex_thread_t *mt = (mutex_thread_t *)arg;
     mt->blocking = 0;
-    mt->got_unlocked = _mutex_remove_thread_from_waiting_queue(mt->mutex, mt->thread);
+    _mutex_remove_thread_from_waiting_queue(mt->mutex, mt->thread, &mt->got_unlocked);
     irq_restore(irqstate);
 }
 
