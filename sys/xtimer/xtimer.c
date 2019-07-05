@@ -244,7 +244,14 @@ int _xtimer_msg_receive_timeout(msg_t *msg, uint32_t timeout_ticks)
     return _msg_wait(msg, &tmsg, &t);
 }
 
-static int _mutex_remove_thread_from_waiting_queue(mutex_t *mutex, thread_t *thread)
+/* 
+ * The function will get the int pointer (unlocked) as parameter and write into the int (the pointer is pointing to)
+ * whether or not the thread was unlocked.
+ *  
+ *  This is because if this function is called by a thread and the unlocked thread has a higher priority
+ *  the unlocked thread will run instead.
+ */
+static void _mutex_remove_thread_from_waiting_queue(mutex_t *mutex, thread_t *thread, volatile int *unlocked)
 {
     unsigned irqstate = irq_disable();
     assert(mutex != NULL && thread != NULL);
@@ -256,14 +263,16 @@ static int _mutex_remove_thread_from_waiting_queue(mutex_t *mutex, thread_t *thr
             if (mutex->queue.next == NULL) {
                 mutex->queue.next = MUTEX_LOCKED;
             }
+            *unlocked = 1;
+
             sched_set_status(thread, STATUS_PENDING);
             irq_restore(irqstate);
             sched_switch(thread->priority);
-            return 1;
+            return;
         }
     }
+    *unlocked = 0;
     irq_restore(irqstate);
-    return 0;
 }
 
 static void _mutex_timeout(void *arg)
