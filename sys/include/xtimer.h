@@ -33,6 +33,7 @@
 #include "timex.h"
 #include "msg.h"
 #include "mutex.h"
+#include "rmutex.h"
 
 #include "board.h"
 #include "periph_conf.h"
@@ -457,6 +458,17 @@ static inline bool xtimer_less64(xtimer_ticks64_t a, xtimer_ticks64_t b);
  * @return       -1, when the timeout occcured
  */
 int xtimer_mutex_lock_timeout(mutex_t *mutex, uint64_t us);
+
+/**
+ * @brief lock a rmutex but with timeout
+ *
+ * @param[in]    rmutex  rmutex to lock
+ * @param[in]    us     timeout in microseconds relative
+ *
+ * @return       0, when returned after rmutex was locked
+ * @return       -1, when the timeout occcured
+ */
+int xtimer_rmutex_lock_timeout(rmutex_t *rmutex, uint64_t timeout);
 
 /**
  * @brief    Set timeout thread flag after @p timeout
