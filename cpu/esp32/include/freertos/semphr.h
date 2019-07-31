@@ -88,6 +88,16 @@ BaseType_t xSemaphoreTake(SemaphoreHandle_t xSemaphore,
                           TickType_t xTicksToWait);
 
 /**
+ * @brief   returns the current count of the semaphore
+ *          for binary semaphore returns 1 if available
+ *
+ * @param   xSemaphore      the semaphore handle
+ *
+ * @return  the current count
+ */
+UBaseType_t uxSemaphoreGetCount(SemaphoreHandle_t xSemaphore);
+
+/**
  * @brief   gives (or releases) the recrusive semaphore
  *          can be used to give (release) the
  *          semaphore even if the calling thread
