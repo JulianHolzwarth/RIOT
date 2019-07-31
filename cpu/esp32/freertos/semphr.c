@@ -122,6 +122,36 @@ BaseType_t xSemaphoreTake(SemaphoreHandle_t xSemaphore,
     }
 }
 
+UBaseType_t uxSemaphoreGetCount( SemaphoreHandle_t xSemaphore )
+{
+    CHECK_PARAM_RET(xSemaphore != NULL, pdFALSE);
+    mutex_t *mutex;
+    rmutex_t *rmutex;
+
+    uint8_t type = ((_mutex_t *)xSemaphore)->type;
+    switch (type) {
+        case queueQUEUE_TYPE_MUTEX:
+            mutex = &((_mutex_t *)xSemaphore)->mutex;
+            if (mutex->queue.next == NULL) {
+                return 1;
+            }
+            else {
+                return 0;
+            }
+            break;
+        case queueQUEUE_TYPE_RECURSIVE_MUTEX:
+            rmutex = &((_rmutex_t *)xSemaphore)->rmutex;
+            if (rmutex->refcount == 0) {
+                return 1;
+            }
+            else {
+                return 0;
+            }
+        default:
+            return uxQueueMessagesWaiting(xSemaphore);
+    }
+}
+
 SemaphoreHandle_t xSemaphoreCreateRecursiveMutex(void)
 {
     _rmutex_t *_tmp = (_rmutex_t *)malloc(sizeof(_rmutex_t));
