@@ -22,6 +22,11 @@
 #define SEMAPHORE_TEST_FOR_COUNTER 100
 #endif
 
+#ifndef SEMAPHORE_TEST_TIMEOUT
+#define SEMAPHORE_TEST_TIMEOUT 1
+#endif
+
+
 /* to test the semaphore */
 static mutex_t test_mutex;
 static int8_t counting_test;
@@ -187,6 +192,10 @@ int semaphore_test_mutex(void)
 
     /* testing mutex semaphore with no timeout */
     if (semaphore_test_helpfunction(testing_semaphore, 0) == pdFAIL) {
+        test_result = pdFAIL;
+    }
+    /* testing mutex semaphore with a timeout */
+    if (semaphore_test_helpfunction(testing_semaphore, SEMAPHORE_TEST_TIMEOUT) == pdFAIL) {
         test_result = pdFAIL;
     }
     /* testing mutex semaphore with max timeout */
