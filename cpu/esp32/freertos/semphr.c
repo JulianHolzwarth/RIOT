@@ -21,6 +21,7 @@
 #include "log.h"
 #include "mutex.h"
 #include "rmutex.h"
+#include "xtimer.h"
 
 #include "freertos/FreeRTOS.h"
 
@@ -102,14 +103,15 @@ BaseType_t xSemaphoreTake(SemaphoreHandle_t xSemaphore,
                 mutex_lock(mutex);
                 return pdPASS;
             }
-            else {
-                DEBUG("%s not implemented with timeout of %u\n", __func__,
-                      xTicksToWait);
-                assert(0);
-                /* TODO timeout handling */
-                return pdFAIL;
+
+            uint64_t timeout_us = xTicksToWait * portTICK_PERIOD_MS *
+                                  USEC_PER_MSEC;
+
+            if (xtimer_mutex_lock_timeout(mutex, timeout_us) == 0) {
+                return pdPASS;
             }
-            break;
+            return pdFAIL;
+
         }
         case queueQUEUE_TYPE_RECURSIVE_MUTEX:
             return xSemaphoreTakeRecursive(xSemaphore, xTicksToWait);

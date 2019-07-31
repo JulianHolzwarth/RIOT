@@ -78,10 +78,8 @@ BaseType_t xSemaphoreGive(SemaphoreHandle_t xSemaphore);
  * @brief   takes the semaphore
  *
  * @param   xSemaphore      the semaphore handle
- * @param   xTicksToWait    not correctly used:
- *                          if 0: try once
- *                          if portMAX_DELAY: wait until free
- *                          else: assert
+ * @param   xTicksToWait    ticks to wait for the semaphore
+ *                          (1 tick = 10 ms)
  *
  * @return  pdPass  if  successful
  * @return  pdFail  else
