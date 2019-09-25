@@ -1,0 +1,6 @@
+ ps
+	pid | name                 | state    Q | pri | stack  ( used) | base addr  | current     
+	  1 | idle                 | pending  Q |  15 |    128 (   98) |      0x5fa |      0x61e 
+	  2 | main                 | running  Q |   7 |    640 (  348) |      0x67a |      0x7ed 
+	  3 | pthread-reaper       | bl rx    _ |   0 |    128 (   94) |      0x8fc |      0x921 
+	    | SUM                  |            |     |    896 (  540)

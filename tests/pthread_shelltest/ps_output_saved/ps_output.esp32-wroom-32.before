@@ -1,0 +1,8 @@
+ ps
+	pid | name                 | state    Q | pri | stack  ( used) | base addr  | current     
+	  - | isr_stack            | -        - |   - |   2048 (    0) | 0x3ffb0220 | 0x3ffb0a20
+	  1 | idle                 | pending  Q |  31 |   2048 (  416) | 0x3ffb1690 | 0x3ffb1cf0 
+	  2 | main                 | running  Q |  15 |   3072 ( 1136) | 0x3ffb1e90 | 0x3ffb26d0 
+	  3 | pthread-reaper       | bl rx    _ |   0 |   2048 (  488) | 0x3ffb2ab8 | 0x3ffb30d0 
+	  4 | pthread              | bl mutex _ |  15 |   2048 (  800) | 0x3ffb3710 | 0x3ffb3d10 
+	    | SUM                  |            |     |  11264 ( 2840)
