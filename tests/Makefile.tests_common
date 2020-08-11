@@ -4,6 +4,9 @@ ifneq (,$(wildcard $(CURDIR)/tests/.))
   DEFAULT_MODULE += test_utils_interactive_sync
 endif
 
+CFLAGS += -fprofile-arcs -ftest-coverage -fprofile-abs-path -lgcov -coverage -fPIC -DCONFIG_SKIP_BOOT_MSG
+LINKFLAGS += -fprofile-arcs -ftest-coverage -fprofile-abs-path -lgcov -coverage -fPIC
+
 ifneq (,$(filter tests_driver_%,$(APPLICATION)))
   BOARD ?= samr21-xpro
 endif
