@@ -81,6 +81,20 @@ int main(void)
                   "second_thread");
 
     thread_t *thread = (thread_t*) thread_get(pid);
+
+    /* Try when not waiting */
+    if (thread_flags_wake(thread_get_active()) != 0) {
+        puts("ERROR: wakeup");
+        return 1;
+    }
+
+    /* Try waiting when flag already set */
+    thread_flags_set(thread_get_active(), 0x1);
+    if (thread_flags_wait_all(0x1) != 0x1) {
+        puts("ERROR: wrong flag return");
+        return 1;
+    }
+
     _set(thread, 0x1);
     _set(thread, 0x64);
     _set(thread, 0x1);
