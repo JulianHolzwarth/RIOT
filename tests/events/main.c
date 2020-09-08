@@ -47,6 +47,7 @@ static void delayed_callback3(event_t *arg);
 
 static event_t event = { .handler = callback };
 static event_t event2 = { .handler = callback };
+static event_t event_forbidden = { .handler = callback };
 static event_t delayed_event1 = { .handler = delayed_callback1 };
 static event_t delayed_event2 = { .handler = delayed_callback2 };
 static event_t delayed_event3 = { .handler = delayed_callback3 };
@@ -66,7 +67,7 @@ typedef struct {
 
 static custom_event_t custom_event = { .super.handler = custom_callback, .text = "CUSTOM CALLBACK" };
 static event_callback_t event_callback = EVENT_CALLBACK_INIT(timed_callback, 0x12345678);
-static event_callback_t noevent_callback = EVENT_CALLBACK_INIT(forbidden_callback, 0);
+event_callback_t noevent_callback;
 
 static void custom_callback(event_t *event)
 {
@@ -155,6 +156,14 @@ int main(void)
     printf("posting %p to delayed queue at index 0\n", (void *)&delayed_event3);
     event_post(&dqs[0], &delayed_event3);
 
+    /* test if event is thrown away when event.list_node.next != NULL */
+    event_queue_t forbidden_q;
+    forbidden_q.waiter = NULL;
+    event_queue_init_detached(&forbidden_q);
+    clist_lpush(&event_forbidden.list_node, &event_forbidden.list_node);
+    event_post(&forbidden_q, &event_forbidden);
+    expect(event_get(&forbidden_q) == NULL);
+
     printf("running thread that will claim event queues %p\n", (void *)&dqs);
     thread_create(stack, sizeof(stack), PRIO, 0, claiming_thread, dqs, "ct");
 
@@ -182,6 +191,7 @@ int main(void)
     event_timeout_t event_timeout_canceled;
 
     puts("posting timed callback with timeout 0.5sec and canceling it again");
+    event_callback_init(&noevent_callback, forbidden_callback, 0);
     event_timeout_init(&event_timeout_canceled, &queue,
                        (event_t *)&noevent_callback);
     event_timeout_set(&event_timeout_canceled, 500 * US_PER_MS);
