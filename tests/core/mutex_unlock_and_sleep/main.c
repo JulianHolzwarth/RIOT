@@ -36,6 +36,8 @@ static const unsigned KITERATIONS = 10;
 static void *second_thread(void *arg)
 {
     (void) arg;
+    thread_wakeup(main_pid);
+
     while (1) {
         mutex_lock(&mutex);
         thread_wakeup(main_pid);
@@ -60,6 +62,11 @@ int main(void)
                   second_thread,
                   NULL,
                   "second_thread");
+    /* test when mutex not locked */
+    mutex_unlock_and_sleep(&mutex);
+    
+    
+    indicator = 0;
 
     while (1) {
         mutex_lock(&mutex);
