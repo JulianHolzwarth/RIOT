@@ -466,6 +466,9 @@ void msg_queue_print(void)
     msg_t *msg_array = thread->msg_array;
     int first_msg = cib_peek(msg_queue);
 
+    printf("i is %d read is %d \n", i, msg_queue->read_count);
+    printf("other is %d write is %d and mask is %d \n", (msg_queue->write_count & msg_queue->mask), msg_queue->write_count, msg_queue->mask);
+
     printf("Message queue of thread %" PRIkernel_pid "\n", thread->pid);
     printf("    size: %u (avail: %d)\n", msg_queue->mask + 1, msg_counter);
 
