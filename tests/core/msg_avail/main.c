@@ -32,6 +32,12 @@ msg_t msg_queue[MSG_QUEUE_LENGTH];
 
 int main(void)
 {
+    /* check msg_avail without msg queue */
+    if (msg_avail() != 0 ) {
+        puts("[FAILED]");
+        return 1;
+    }
+
     msg_t msges[MSG_QUEUE_LENGTH];
 
     msg_init_queue(msg_queue, MSG_QUEUE_LENGTH);
@@ -48,10 +54,12 @@ int main(void)
             return 1;
         }
     }
+    msg_queue_print();
     /* receive available messages in queue */
     for (unsigned idx = msg_avail(); idx > 0; --idx) {
         msg_t msg;
         msg_receive(&msg);
+        msg_queue_print();
         LOG_INFO("- got msg: %d\n", (MSG_QUEUE_LENGTH - idx));
         if (msg.type != (MSG_QUEUE_LENGTH - idx)
             || msg_avail() != idx - 1) {
