@@ -55,6 +55,11 @@ void *thread1(void *arg)
     puts("THREAD 1 start");
 
     msg_bus_attach(arg, &sub);
+    if (msg_bus_get_entry(arg) != &sub) {
+        puts("FAILED");
+        /* to fail test */
+        thread_zombify();
+    }
     msg_bus_subscribe(&sub, 23);
     msg_bus_subscribe(&sub, 24);
     msg_bus_subscribe(&sub, MSG_TYPE_EXIT);
@@ -72,7 +77,19 @@ void *thread2(void *arg)
 
     puts("THREAD 2 start");
 
+    /* check if thread is not in msg bus before (if in for loop check) */
+    if (msg_bus_get_entry(arg) != NULL) {
+        puts("FAILED");
+        /* to fail test */
+        thread_zombify();
+    }
+
     msg_bus_attach(arg, &sub);
+    if (msg_bus_get_entry(arg) != &sub) {
+        puts("FAILED");
+        /* to fail test */
+        thread_zombify();
+    }
     msg_bus_subscribe(&sub, 24);
     msg_bus_subscribe(&sub, MSG_TYPE_EXIT);
 
@@ -90,6 +107,11 @@ void *thread3(void *arg)
     puts("THREAD 3 start");
 
     msg_bus_attach(arg, &sub);
+    if (msg_bus_get_entry(arg) != &sub) {
+        puts("FAILED");
+        /* to fail test */
+        thread_zombify();
+    }
     msg_bus_subscribe(&sub, 23);
     msg_bus_subscribe(&sub, MSG_TYPE_EXIT);
 
@@ -139,6 +161,11 @@ int main(void)
     if (thread_getstatus(p1) != STATUS_NOT_FOUND ||
         thread_getstatus(p2) != STATUS_NOT_FOUND ||
         thread_getstatus(p3) != STATUS_NOT_FOUND ) {
+        puts("FAILED");
+        return 1;
+    }
+
+    if (msg_bus_get_entry(&my_bus) != NULL) {
         puts("FAILED");
         return 1;
     }
