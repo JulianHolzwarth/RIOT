@@ -20,6 +20,7 @@
  * @}
  */
 
+#include <sched.h>
 #include <stdint.h>
 #include <inttypes.h>
 
@@ -31,6 +32,10 @@
 #include "sched.h"
 #include "thread.h"
 #include "panic.h"
+
+#ifdef MULTICORE
+#define NUM_CORES 2
+#endif
 
 #ifdef MODULE_MPU_STACK_GUARD
 #include "mpu.h"
@@ -56,7 +61,11 @@
  * @brief   Symbols also used by OpenOCD, keep in sync with src/rtos/riot.c
  * @{
  */
+#ifdef MULTICORE
+voilitile kerkernel_pid_t sched_active_pid[NUM_CORES]
+#else
 volatile kernel_pid_t sched_active_pid = KERNEL_PID_UNDEF;
+#endif
 volatile thread_t *sched_threads[KERNEL_PID_LAST + 1];
 volatile int sched_num_threads = 0;
 
@@ -73,7 +82,11 @@ const uint8_t _tcb_name_offset = offsetof(thread_t, name);
 #endif
 /** @} */
 
+#ifdef MULTICORE
+volatile thread_t *sched_active_thread[NUM_CORES];
+#else
 volatile thread_t *sched_active_thread;
+#endif
 volatile unsigned int sched_context_switch_request;
 
 clist_node_t sched_runqueues[SCHED_PRIO_LEVELS];
