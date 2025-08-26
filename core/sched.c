@@ -210,9 +210,14 @@ thread_t *__attribute__((used)) sched_run(void)
         if (active_thread) {
             _unschedule(active_thread);
         }
+#ifdef MULTICORE
+        sched_active_pid[read_cpuid()] = next_thread->pid;
+        sched_active_thread[read_cpuid()] = next_thread;
+#else
 
         sched_active_pid = next_thread->pid;
         sched_active_thread = next_thread;
+#endif
 
 #ifdef MODULE_SCHED_CB
         if (sched_cb) {

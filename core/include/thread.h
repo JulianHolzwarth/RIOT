@@ -398,9 +398,13 @@ int thread_wakeup(kernel_pid_t pid);
  */
 static inline kernel_pid_t thread_getpid(void)
 {
+#ifdef MULTICORE
+    extern volitile kernel_pid_t sched_active_pid[];
+    return sched_active_pid[read_cpuid];
+#else
     extern volatile kernel_pid_t sched_active_pid;
-
     return sched_active_pid;
+#endif
 }
 
 /**
@@ -412,9 +416,14 @@ static inline kernel_pid_t thread_getpid(void)
  */
 static inline thread_t *thread_get_active(void)
 {
+#ifdef MULTICORE
+    extern volatile thread_t *sched_active_thread[];
+    return (thread_t *)sched_active_thread[read_cpuid];
+#else
     extern volatile thread_t *sched_active_thread;
 
     return (thread_t *)sched_active_thread;
+#endif
 }
 
 /**
