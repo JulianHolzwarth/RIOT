@@ -62,7 +62,7 @@
  * @{
  */
 #ifdef MULTICORE
-voilitile kerkernel_pid_t sched_active_pid[NUM_CORES]
+volatile kernel_pid_t sched_active_pid[NUM_CORES]
 #else
 volatile kernel_pid_t sched_active_pid = KERNEL_PID_UNDEF;
 #endif
