@@ -20,6 +20,9 @@
 #include "cpu_conf.h"
 #include "kernel_defines.h"
 #include "debug_irq_disable.h"
+#ifdef MULTICORE
+#include "multicore.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -51,6 +54,10 @@ static inline uint32_t _irq_debug_stop_count(void)
 static inline __attribute__((always_inline))
 unsigned int irq_disable(void)
 {
+#ifdef MULTICORE
+
+    spinlock_claim_blocking();
+#endif
     uint32_t mask = __get_PRIMASK();
 
     if ((mask == 0) && IS_USED(MODULE_DEBUG_IRQ_DISABLE)) {
@@ -67,6 +74,9 @@ unsigned int irq_disable(void)
 static inline __attribute__((always_inline)) __attribute__((used))
 unsigned int irq_enable(void)
 {
+#ifdef MULTICORE
+    spinlock_unlock();
+#endif
     unsigned result = __get_PRIMASK();
 
     __enable_irq();
@@ -80,6 +90,11 @@ static inline __attribute__((always_inline))
 #if !IS_USED(MODULE_DEBUG_IRQ_DISABLE)
 void irq_restore(unsigned int state)
 {
+#ifdef MULTICORE
+    if (!state){
+        spinlock_unlock();
+    }
+#endif
     __set_PRIMASK(state);
 }
 #else
@@ -90,6 +105,11 @@ void _irq_restore(unsigned int state, const char *file, unsigned line)
     if (state == 0) {
         ticks = _irq_debug_stop_count();
     }
+#ifdef MULTICORE
+    if (!state){
+        spinlock_unlock();
+    }
+#endif
 
     __set_PRIMASK(state);
 
