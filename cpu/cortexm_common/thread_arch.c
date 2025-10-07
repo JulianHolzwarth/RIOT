@@ -369,7 +369,13 @@ void __attribute__((naked)) __attribute__((used)) isr_pendsv(void) {
     );
 }
 #else /* CPU_CORE_CORTEXM_FULL_THUMB */
+#endif
+
+
 void __attribute__((naked)) __attribute__((used)) isr_pendsv(void) {
+
+    printf("isr core: %ld, active_thread: %p\n", SIO->CPUID, thread_get_active());
+
     __asm__ volatile (
     /* PendSV handler entry point */
     /* save context by pushing unsaved registers to the stack */
@@ -378,8 +384,10 @@ void __attribute__((naked)) __attribute__((used)) isr_pendsv(void) {
     ".syntax unified                  \n"
 
     /* skip context saving if sched_active_thread == NULL */
-    "ldr    r1, =sched_active_thread  \n" /* r1 = &sched_active_thread  */
     "push   {r4,lr}                   \n" /* push r4 and exception return code */
+    "cpsid  i                         \n" /* disable irq */
+    "bl     sched_active_thread_pointer \n" /* call function to get correct active thread pointer */
+    "mov    r1, r0                    \n" /* r1 = r0 (return from function */
     "ldr    r4, [r1]                  \n" /* r4 = sched_active_thread */
 
     "cpsid  i                         \n" /* Disable IRQs during sched_run */
@@ -422,7 +430,9 @@ void __attribute__((naked)) __attribute__((used)) isr_pendsv(void) {
 
     "restore_context:                 \n" /* Label to skip thread state saving */
 
-    "ldr    r0, =sched_active_thread  \n" /* load address of current TCB */
+    "cpsid  i                         \n" /* disable irq */
+    "bl     sched_active_thread_pointer \n" /* call function to get correct active thread pointer */
+    "cpsid  i                         \n" /* disable irq */
     "ldr    r0, [r0]                  \n" /* dereference TCB */
     "ldr    r0, [r0]                  \n" /* load tcb-sp to R0 */
     "mov    sp, r0                    \n" /* make user mode SP active SP */
@@ -448,7 +458,7 @@ void __attribute__((naked)) __attribute__((used)) isr_pendsv(void) {
      :
     );
 }
-#endif
+// #endif
 
 #ifdef MODULE_CORTEXM_SVC
 void __attribute__((naked)) __attribute__((used)) isr_svc(void)

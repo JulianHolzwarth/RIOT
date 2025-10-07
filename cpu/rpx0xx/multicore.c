@@ -3,15 +3,52 @@
 #include "thread.h"
 #include <stdint.h>
 
-void spinlock_claim_blocking(void)
+int owner;
+
+void spinlock_claim_blocking(int spinlock_id)
 {
-    while (!SIO->SPINLOCK0) {
+    uint32_t *spinlock = (uint32_t *)(&(SIO->SPINLOCK0) + spinlock_id * sizeof(uint32_t));
+    while (!*spinlock) {
     }
 }
 
-void spinlock_unlock(void)
+void spinlock_unlock(int spinlock_id)
 {
-    SIO->SPINLOCK0 = 1;
+    uint32_t *spinlock = (uint32_t *)(&(SIO->SPINLOCK0) + spinlock_id * sizeof(uint32_t));
+    *spinlock = 1;
+}
+
+void spinlock_claim_with_check_blocking(void)
+{
+    while (!SIO->SPINLOCK1) {
+    }
+    if ((int)SIO->CPUID == owner - 1) {
+        SIO->SPINLOCK1 = 1;
+        return;
+    }
+
+    SIO->SPINLOCK1 = 1;
+    while (!SIO->SPINLOCK0) {
+    }
+    while (!SIO->SPINLOCK1) {
+    }
+    owner = SIO->CPUID + 1;
+
+    SIO->SPINLOCK1 = 1;
+}
+
+void spinlock_unlock_with_check_blocking(void)
+{
+    while (!SIO->SPINLOCK1) {
+    }
+    if ((int)SIO->CPUID == owner - 1) {
+        owner = 0;
+        SIO->SPINLOCK1 = 1;
+        SIO->SPINLOCK0 = 1;
+        return;
+    }
+
+    SIO->SPINLOCK1 = 1;
 }
 
 int read_cpuid(void)

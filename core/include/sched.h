@@ -189,6 +189,10 @@ typedef enum {
 #define SCHED_PRIO_LEVELS 16
 #endif
 
+#ifdef MULTICORE
+void **sched_active_thread_pointer(void);
+#endif
+
 /**
  * @brief   Triggers the scheduler to schedule the next thread
  *

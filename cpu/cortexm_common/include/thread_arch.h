@@ -17,6 +17,8 @@
  */
 
 #include "cpu_conf.h"
+#include <stdio.h>
+#include "multicore.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,7 +32,9 @@ static inline __attribute__((always_inline)) void thread_yield_higher(void)
 {
     /* trigger the PENDSV interrupt to run scheduler and schedule new thread if
      * applicable */
+    printf("TEST thread_yield_higher %ld\n", SIO->CPUID);
     SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
+    printf("TEST2 thread_yield_higher)%ld\n", SIO->CPUID);
     /* flush the pipeline. Otherwise we risk that subsequent instructions are
      * executed before the IRQ has actually triggered */
     __ISB();

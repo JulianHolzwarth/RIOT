@@ -123,6 +123,10 @@
 #include "msg.h"
 #include "sched.h"
 #include "thread_config.h"
+#ifdef MULTICORE
+#include "multicore.h"
+#include "fifo.h"
+#endif
 
 #ifdef MODULE_CORE_THREAD_FLAGS
 #include "thread_flags.h"
@@ -396,8 +400,8 @@ int thread_wakeup(kernel_pid_t pid);
 static inline kernel_pid_t thread_getpid(void)
 {
 #ifdef MULTICORE
-    extern volitile kernel_pid_t sched_active_pid[];
-    return sched_active_pid[read_cpuid];
+    extern volatile kernel_pid_t sched_active_pid[2];
+    return sched_active_pid[SIO->CPUID];
 #else
     extern volatile kernel_pid_t sched_active_pid;
     return sched_active_pid;
@@ -414,8 +418,8 @@ static inline kernel_pid_t thread_getpid(void)
 static inline thread_t *thread_get_active(void)
 {
 #ifdef MULTICORE
-    extern volatile thread_t *sched_active_thread[];
-    return (thread_t *)sched_active_thread[read_cpuid];
+    extern volatile thread_t *sched_active_thread[2];
+    return (thread_t *)sched_active_thread[SIO->CPUID];
 #else
     extern volatile thread_t *sched_active_thread;
 

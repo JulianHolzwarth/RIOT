@@ -55,8 +55,7 @@ static inline __attribute__((always_inline))
 unsigned int irq_disable(void)
 {
 #ifdef MULTICORE
-
-    spinlock_claim_blocking();
+    spinlock_claim_with_check_blocking();
 #endif
     uint32_t mask = __get_PRIMASK();
 
@@ -75,7 +74,7 @@ static inline __attribute__((always_inline)) __attribute__((used))
 unsigned int irq_enable(void)
 {
 #ifdef MULTICORE
-    spinlock_unlock();
+    spinlock_unlock_with_check_blocking();
 #endif
     unsigned result = __get_PRIMASK();
 
@@ -91,8 +90,8 @@ static inline __attribute__((always_inline))
 void irq_restore(unsigned int state)
 {
 #ifdef MULTICORE
-    if (!state){
-        spinlock_unlock();
+    if (state == 0){
+    spinlock_unlock_with_check_blocking();
     }
 #endif
     __set_PRIMASK(state);
@@ -104,12 +103,10 @@ void _irq_restore(unsigned int state, const char *file, unsigned line)
 
     if (state == 0) {
         ticks = _irq_debug_stop_count();
-    }
 #ifdef MULTICORE
-    if (!state){
-        spinlock_unlock();
-    }
+    spinlock_unlock_with_check_blocking();
 #endif
+    }
 
     __set_PRIMASK(state);
 

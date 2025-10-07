@@ -29,29 +29,31 @@
 #include "sched.h"
 #include "thread.h"
 #include "panic.h"
+#include <stdio.h>
 
 #ifdef MULTICORE
-#define NUM_CORES 2
+#include "multicore.h"
+#  define NUM_CORES 2
 #endif
 
 #ifdef MODULE_MPU_STACK_GUARD
-#include "mpu.h"
+#  include "mpu.h"
 #endif
 
-#define ENABLE_DEBUG 0
+#define ENABLE_DEBUG 1
 #include "debug.h"
 
 #ifdef PICOLIBC_TLS
-#include <picotls.h>
+#  include <picotls.h>
 #endif
 
 /* Needed by OpenOCD to read sched_threads */
 #if defined(__APPLE__) && defined(__MACH__)
- #define FORCE_USED_SECTION __attribute__((used)) __attribute__((section( \
-                                                                     "__OPENOCD,__openocd")))
+#  define FORCE_USED_SECTION __attribute__((used)) __attribute__((section( \
+      "__OPENOCD,__openocd")))
 #else
- #define FORCE_USED_SECTION __attribute__((used)) __attribute__((section( \
-                                                                     ".openocd")))
+#  define FORCE_USED_SECTION __attribute__((used)) __attribute__((section( \
+      ".openocd")))
 #endif
 
 /**
@@ -59,7 +61,7 @@
  * @{
  */
 #ifdef MULTICORE
-volatile kernel_pid_t sched_active_pid[NUM_CORES]
+volatile kernel_pid_t sched_active_pid[NUM_CORES] = { KERNEL_PID_UNDEF };
 #else
 volatile kernel_pid_t sched_active_pid = KERNEL_PID_UNDEF;
 #endif
@@ -92,6 +94,13 @@ static uint32_t runqueue_bitcache = 0;
 #ifdef MODULE_SCHED_CB
 static void (*sched_cb)(kernel_pid_t active_thread,
                         kernel_pid_t next_thread) = NULL;
+#endif
+
+#ifdef MULTICORE
+void **sched_active_thread_pointer(void)
+{
+    return (void**)&sched_active_thread[read_cpuid()];
+}
 #endif
 
 /* Depending on whether the CLZ instruction is available, the order of the
@@ -158,6 +167,7 @@ thread_t *__attribute__((used)) sched_run(void)
 {
     thread_t *active_thread = thread_get_active();
     thread_t *previous_thread = active_thread;
+    printf("first thread: %p, second thread: %p\n", *sched_active_thread, *(sched_active_thread + 1));
 
     if (!IS_USED(MODULE_CORE_IDLE_THREAD) && !runqueue_bitcache) {
         if (active_thread) {
@@ -176,15 +186,32 @@ thread_t *__attribute__((used)) sched_run(void)
     thread_t *next_thread = container_of(sched_runqueues[nextrq].next->next,
                                          thread_t, rq_entry);
 
+#ifdef MULTICORE
+    if (next_thread != active_thread) {
+        if (next_thread->status == STATUS_RUNNING) {
+            printf("search status\n");
+            for (int i = 0; i < max_threads; i++) {
+                if (sched_threads[i]->status == STATUS_PENDING) {
+                    next_thread = (thread_t *)sched_threads[i];
+                    printf("found status\n");
+                    printf("\ncore: %d, next pid: %d, \n\n", read_cpuid(), i);
+                    break;
+                }
+            }
+        }
+    }
+
+#endif
+
+    printf("\ncore: %d, next pid: %d, \n\n", read_cpuid(), next_thread->pid);
+
 #if (IS_USED(MODULE_SCHED_RUNQ_CALLBACK))
     sched_runq_callback(nextrq);
 #endif
 
     DEBUG(
         "sched_run: active thread: %" PRIkernel_pid ", next thread: %" PRIkernel_pid "\n",
-        (kernel_pid_t)((active_thread == NULL)
-                       ? KERNEL_PID_UNDEF
-                       : active_thread->pid),
+        (kernel_pid_t)((active_thread == NULL) ? KERNEL_PID_UNDEF : active_thread->pid),
         next_thread->pid);
 
     next_thread->status = STATUS_RUNNING;
@@ -231,7 +258,7 @@ thread_t *__attribute__((used)) sched_run(void)
             2,                                              /* MPU region 2 */
             (uintptr_t)next_thread->stack_start + 31,       /* Base Address (rounded up) */
             MPU_ATTR(1, AP_RO_RO, 0, 1, 0, 1, MPU_SIZE_32B) /* Attributes and Size */
-            );
+        );
 #endif
         DEBUG("sched_run: done, changed sched_active_thread.\n");
     }
@@ -335,8 +362,11 @@ NORETURN void sched_task_exit(void)
     sched_num_threads--;
 
     sched_set_status(thread_get_active(), STATUS_STOPPED);
-
+#ifdef MULTICORE
+    sched_active_thread[read_cpuid()] = NULL;
+#else
     sched_active_thread = NULL;
+#endif
     cpu_switch_context_exit();
 }
 
@@ -367,9 +397,7 @@ void sched_change_priority(thread_t *thread, uint8_t priority)
 
     thread_t *active = thread_get_active();
 
-    if ((active == thread)
-        || ((active != NULL) && (active->priority > priority) && thread_is_active(thread))
-        ) {
+    if ((active == thread) || ((active != NULL) && (active->priority > priority) && thread_is_active(thread))) {
         /* If the change in priority would result in a different decision of
          * the scheduler, we need to yield to make sure the change in priority
          * takes effect immediately. This can be due to one of the following:
