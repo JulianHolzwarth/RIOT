@@ -206,25 +206,15 @@ thread_t *__attribute__((used)) sched_run(void)
 {
     thread_t *active_thread = thread_get_active();
     thread_t *previous_thread = active_thread;
-    //printf("first thread: %p, second thread: %p\n", *sched_active_thread, *(sched_active_thread + 1));
 
-    if (active_thread->status == STATUS_RUNNING && !runqueue_bitcache) {
+    if (active_thread) {
+        if (active_thread->status == STATUS_RUNNING && !runqueue_bitcache) {
 #if (IS_USED(MODULE_SCHED_RUNQ_CALLBACK))
-        sched_runq_callback(nextrq);
+            sched_runq_callback(active_thread->priority);
 #endif
-#ifdef MODULE_SCHED_CB
-        /* Call the sched callback again only if the active thread is NULL. When
-         * active_thread is NULL, there was a sleep in between descheduling the
-         * previous thread and scheduling the new thread. Call the callback here
-         * again ensures that the time sleeping doesn't count as running the
-         * previous thread
-         */
-        if (sched_cb && !active_thread) {
-            sched_cb(KERNEL_PID_UNDEF, next_thread->pid);
+            DEBUG("sched_run: done, sched_active_thread was not changed.\n");
+            return active_thread;
         }
-#endif
-        DEBUG("sched_run: done, sched_active_thread was not changed.\n");
-        return active_thread;
     }
 
     if (!IS_USED(MODULE_CORE_IDLE_THREAD) && !runqueue_bitcache) {
@@ -289,6 +279,7 @@ thread_t *__attribute__((used)) sched_run(void)
         DEBUG("sched_run: done, sched_active_thread was not changed.\n");
     }
     else {
+        _runqueue_pop(next_thread);
         if (active_thread) {
             _unschedule(active_thread);
         }
