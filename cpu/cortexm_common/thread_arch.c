@@ -373,9 +373,6 @@ void __attribute__((naked)) __attribute__((used)) isr_pendsv(void) {
 
 
 void __attribute__((naked)) __attribute__((used)) isr_pendsv(void) {
-
-    printf("isr core: %ld, active_thread: %p\n", SIO->CPUID, thread_get_active());
-
     __asm__ volatile (
     /* PendSV handler entry point */
     /* save context by pushing unsaved registers to the stack */

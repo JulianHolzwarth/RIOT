@@ -40,7 +40,7 @@
 #  include "mpu.h"
 #endif
 
-#define ENABLE_DEBUG 1
+#define ENABLE_DEBUG 0
 #include "debug.h"
 
 #ifdef PICOLIBC_TLS
@@ -167,7 +167,7 @@ thread_t *__attribute__((used)) sched_run(void)
 {
     thread_t *active_thread = thread_get_active();
     thread_t *previous_thread = active_thread;
-    printf("first thread: %p, second thread: %p\n", *sched_active_thread, *(sched_active_thread + 1));
+    //printf("first thread: %p, second thread: %p\n", *sched_active_thread, *(sched_active_thread + 1));
 
     if (!IS_USED(MODULE_CORE_IDLE_THREAD) && !runqueue_bitcache) {
         if (active_thread) {
@@ -189,12 +189,12 @@ thread_t *__attribute__((used)) sched_run(void)
 #ifdef MULTICORE
     if (next_thread != active_thread) {
         if (next_thread->status == STATUS_RUNNING) {
-            printf("search status\n");
+            // printf("search status\n");
             for (int i = 0; i < max_threads; i++) {
                 if (sched_threads[i]->status == STATUS_PENDING) {
                     next_thread = (thread_t *)sched_threads[i];
-                    printf("found status\n");
-                    printf("\ncore: %d, next pid: %d, \n\n", read_cpuid(), i);
+                    // printf("found status\n");
+                    // printf("\ncore: %d, next pid: %d, \n\n", read_cpuid(), i);
                     break;
                 }
             }
@@ -203,7 +203,7 @@ thread_t *__attribute__((used)) sched_run(void)
 
 #endif
 
-    printf("\ncore: %d, next pid: %d, \n\n", read_cpuid(), next_thread->pid);
+    // printf("\ncore: %d, next pid: %d, \n\n", read_cpuid(), next_thread->pid);
 
 #if (IS_USED(MODULE_SCHED_RUNQ_CALLBACK))
     sched_runq_callback(nextrq);
