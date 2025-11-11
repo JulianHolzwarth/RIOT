@@ -137,10 +137,49 @@ static inline unsigned _get_prio_queue_from_runqueue(void)
 #endif
 }
 
+/* Note: Forcing the compiler to inline this function will reduce .text for applications
+ *       not linking in sched_change_priority(), which benefits the vast majority of apps.
+ */
+static inline __attribute__((always_inline)) void _runqueue_push(thread_t *thread, uint8_t priority)
+{
+    DEBUG("sched_set_status: adding thread %" PRIkernel_pid " to runqueue %" PRIu8 ".\n",
+          thread->pid, priority);
+    clist_rpush(&sched_runqueues[priority], &(thread->rq_entry));
+    _set_runqueue_bit(priority);
+
+    /* some thread entered a runqueue
+     * if it is the active runqueue
+     * inform the runqueue_change callback */
+#if (IS_USED(MODULE_SCHED_RUNQ_CALLBACK))
+    thread_t *active_thread = thread_get_active();
+    if (active_thread && active_thread->priority == priority) {
+        sched_runq_callback(priority);
+    }
+#endif
+}
+
+/* Note: Forcing the compiler to inline this function will reduce .text for applications
+ *       not linking in sched_change_priority(), which benefits the vast majority of apps.
+ */
+static inline __attribute__((always_inline)) void _runqueue_pop(thread_t *thread)
+{
+    DEBUG("sched_set_status: removing thread %" PRIkernel_pid " from runqueue %" PRIu8 ".\n",
+          thread->pid, thread->priority);
+    clist_remove(&sched_runqueues[thread->priority], &thread->rq_entry);
+
+    if (!sched_runqueues[thread->priority].next) {
+        _clear_runqueue_bit(thread->priority);
+#if (IS_USED(MODULE_SCHED_RUNQ_CALLBACK))
+        sched_runq_callback(thread->priority);
+#endif
+    }
+}
+
 static void _unschedule(thread_t *active_thread)
 {
     if (active_thread->status == STATUS_RUNNING) {
         active_thread->status = STATUS_PENDING;
+        _runqueue_push(active_thread, active_thread->priority);
     }
 
 #if IS_ACTIVE(SCHED_TEST_STACK)
@@ -168,6 +207,25 @@ thread_t *__attribute__((used)) sched_run(void)
     thread_t *active_thread = thread_get_active();
     thread_t *previous_thread = active_thread;
     //printf("first thread: %p, second thread: %p\n", *sched_active_thread, *(sched_active_thread + 1));
+
+    if (active_thread->status == STATUS_RUNNING && !runqueue_bitcache) {
+#if (IS_USED(MODULE_SCHED_RUNQ_CALLBACK))
+        sched_runq_callback(nextrq);
+#endif
+#ifdef MODULE_SCHED_CB
+        /* Call the sched callback again only if the active thread is NULL. When
+         * active_thread is NULL, there was a sleep in between descheduling the
+         * previous thread and scheduling the new thread. Call the callback here
+         * again ensures that the time sleeping doesn't count as running the
+         * previous thread
+         */
+        if (sched_cb && !active_thread) {
+            sched_cb(KERNEL_PID_UNDEF, next_thread->pid);
+        }
+#endif
+        DEBUG("sched_run: done, sched_active_thread was not changed.\n");
+        return active_thread;
+    }
 
     if (!IS_USED(MODULE_CORE_IDLE_THREAD) && !runqueue_bitcache) {
         if (active_thread) {
@@ -266,53 +324,15 @@ thread_t *__attribute__((used)) sched_run(void)
     return next_thread;
 }
 
-/* Note: Forcing the compiler to inline this function will reduce .text for applications
- *       not linking in sched_change_priority(), which benefits the vast majority of apps.
- */
-static inline __attribute__((always_inline)) void _runqueue_push(thread_t *thread, uint8_t priority)
-{
-    DEBUG("sched_set_status: adding thread %" PRIkernel_pid " to runqueue %" PRIu8 ".\n",
-          thread->pid, priority);
-    clist_rpush(&sched_runqueues[priority], &(thread->rq_entry));
-    _set_runqueue_bit(priority);
-
-    /* some thread entered a runqueue
-     * if it is the active runqueue
-     * inform the runqueue_change callback */
-#if (IS_USED(MODULE_SCHED_RUNQ_CALLBACK))
-    thread_t *active_thread = thread_get_active();
-    if (active_thread && active_thread->priority == priority) {
-        sched_runq_callback(priority);
-    }
-#endif
-}
-
-/* Note: Forcing the compiler to inline this function will reduce .text for applications
- *       not linking in sched_change_priority(), which benefits the vast majority of apps.
- */
-static inline __attribute__((always_inline)) void _runqueue_pop(thread_t *thread)
-{
-    DEBUG("sched_set_status: removing thread %" PRIkernel_pid " from runqueue %" PRIu8 ".\n",
-          thread->pid, thread->priority);
-    clist_remove(&sched_runqueues[thread->priority], &thread->rq_entry);
-
-    if (!sched_runqueues[thread->priority].next) {
-        _clear_runqueue_bit(thread->priority);
-#if (IS_USED(MODULE_SCHED_RUNQ_CALLBACK))
-        sched_runq_callback(thread->priority);
-#endif
-    }
-}
-
 void sched_set_status(thread_t *process, thread_status_t status)
 {
-    if (status >= STATUS_ON_RUNQUEUE) {
-        if (!(process->status >= STATUS_ON_RUNQUEUE)) {
+    if (status == STATUS_PENDING) {
+        if (process->status !=  STATUS_PENDING) {
             _runqueue_push(process, process->priority);
         }
     }
     else {
-        if (process->status >= STATUS_ON_RUNQUEUE) {
+        if (process->status == STATUS_PENDING) {
             _runqueue_pop(process);
         }
     }
@@ -387,7 +407,7 @@ void sched_change_priority(thread_t *thread, uint8_t priority)
 
     unsigned irq_state = irq_disable();
 
-    if (thread_is_active(thread)) {
+    if (thread->status == STATUS_PENDING) {
         _runqueue_pop(thread);
         _runqueue_push(thread, priority);
     }
@@ -397,7 +417,7 @@ void sched_change_priority(thread_t *thread, uint8_t priority)
 
     thread_t *active = thread_get_active();
 
-    if ((active == thread) || ((active != NULL) && (active->priority > priority) && thread_is_active(thread))) {
+    if ((thread->status == STATUS_RUNNING) || (active == thread) || ((active != NULL) && (active->priority > priority) && thread_is_active(thread))) {
         /* If the change in priority would result in a different decision of
          * the scheduler, we need to yield to make sure the change in priority
          * takes effect immediately. This can be due to one of the following:
