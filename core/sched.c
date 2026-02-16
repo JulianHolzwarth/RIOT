@@ -238,8 +238,6 @@ thread_t *__attribute__((used)) sched_run(void)
         next_thread = previous_thread;
     }
 
-
-
     // printf("\ncore: %d, next pid: %d, \n\n", read_cpuid(), next_thread->pid);
 
 #if (IS_USED(MODULE_SCHED_RUNQ_CALLBACK))
