@@ -2,6 +2,9 @@
 #include "thread.h"
 
 typedef void *(*thread_task_func_t)(void *arg);
+
+void spinlocks_init(void);
+
 void spinlock_claim_blocking(int spinlock_id);
 
 void spinlock_unlock(int spinlock_id);

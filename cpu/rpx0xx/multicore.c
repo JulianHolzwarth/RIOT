@@ -5,6 +5,14 @@
 
 int owner;
 
+void spinlocks_init(void)
+{
+    /* reset all spinlocks */
+    for (int i = 0; i < 32; i++) {
+        spinlock_unlock(i);
+    }
+}
+
 void spinlock_claim_blocking(int spinlock_id)
 {
     uint32_t *spinlock = (uint32_t *)(&(SIO->SPINLOCK0) + spinlock_id * sizeof(uint32_t));

@@ -23,6 +23,7 @@
 #include "io_reg.h"
 #include "stdio_base.h"
 #include "vendor/RP2040.h"
+#include "multicore.h"
 
 #define ENABLE_DEBUG        0
 #include "debug.h"
@@ -91,6 +92,9 @@ void cpu_init(void)
     cortexm_init();
 
     _cpu_reset();
+
+    /* initialize the spinlocks */
+    spinlocks_init();
 
     /* initialize stdio prior to periph_init() to allow use of DEBUG() there */
     early_init();
