@@ -234,24 +234,11 @@ thread_t *__attribute__((used)) sched_run(void)
     thread_t *next_thread = container_of(sched_runqueues[nextrq].next->next,
                                          thread_t, rq_entry);
 
-#ifdef MULTICORE
-    if (next_thread != active_thread) {
-        if (next_thread->status == STATUS_RUNNING) {
-            // printf("search status\n");
-            for (int i = 0; i < max_threads; i++) {
-                if (sched_threads[i]) {
-                    if (sched_threads[i]->status == STATUS_PENDING) {
-                        next_thread = (thread_t *)sched_threads[i];
-                    // printf("found status\n");
-                    // printf("\ncore: %d, next pid: %d, \n\n", read_cpuid(), i);
-                        break;
-                    }
-                }
-            }
-        }
+    if (previous_thread != NULL && next_thread->priority >= previous_thread->priority) {
+        next_thread = previous_thread;
     }
 
-#endif
+
 
     // printf("\ncore: %d, next pid: %d, \n\n", read_cpuid(), next_thread->pid);
 
