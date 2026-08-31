@@ -16,3 +16,7 @@ void spinlock_unlock_with_check_blocking(void);
 int read_cpuid(void);
 
 void start_core(char *stackpointer, thread_task_func_t entry);
+
+void start_resetmode_core(void);
+
+void stop_restmode_core(void);

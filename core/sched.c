@@ -225,6 +225,7 @@ thread_t *__attribute__((used)) sched_run(void)
 
         do {
             sched_arch_idle();
+            printf("\n # \n ");
         } while (!runqueue_bitcache);
     }
 

@@ -2,6 +2,12 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
+void fifo_init(void)
+{
+
+
+}
+
 int fifo_has_data(void)
 {
     return SIO->FIFO_ST & 0x00000001;
